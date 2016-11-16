@@ -23,9 +23,12 @@ $(TARGET): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 pifload: $(OBJS)
-	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
+	$(CXX) -o $@ pifload.cpp $(OBJS)
 
-all: libpif.so pifload
+piffind: $(OBJS)
+	$(CXX) -o $@ piffind.cpp $(OBJS)
+
+all: libpif.so pifload piffind
 
 
 install:
@@ -37,4 +40,4 @@ install:
 .PHONY: clean
 
 clean:
-	rm -f *.o $(TARGET) pifload
+	rm -f *.o $(TARGET) pifload piffind
