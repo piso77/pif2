@@ -5,14 +5,14 @@ using namespace std;
 
 #include <string>
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "pifwrap.h"
-
-extern const int g_iDataSize;
-extern const unsigned char g_pucDataArray[];
 
 #define CFG_PAGE_SIZE           16
 #define UFM_PAGE_SIZE           16
@@ -103,9 +103,8 @@ static uint8_t flipByte(int x) {
   }
 
 //---------------------------------------------------------------------
-static void configureXO2(pifHandle h) {
-  int cfg_page_count = (g_iDataSize-1) / (CFG_PAGE_SIZE+1);
-  cfg_page_count = 9212;
+static void configureXO2(pifHandle h, char *addr, int len) {
+  int cfg_page_count = (len-1) / (CFG_PAGE_SIZE+1);
 
   printf("\n----------------------------\n");
 
@@ -132,7 +131,7 @@ static void configureXO2(pifHandle h) {
       int dataIx = 1                        // header byte
              + pageNum * (CFG_PAGE_SIZE+1)  // 16 bytes/frame + END_OF_FRAME
              + i;
-      rawData[i] = (uint8_t)g_pucDataArray[dataIx];
+      rawData[i] = (uint8_t)addr[dataIx];
       }
     for (int i=0; i<CFG_PAGE_SIZE; i++) {
 //    frameData[i] = flipByte(rawData[CFG_PAGE_SIZE-1-i]); // FlashCheck 'Preamble ERR'
@@ -166,9 +165,32 @@ static void configureXO2(pifHandle h) {
   printf("configuration done\n");
   }
 
+#define handle_error(msg) \
+	do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
 //---------------------------------------------------------------------
-int main() {
-//setbuf(stdout, NULL);
+int main(int argc, char *argv[]) {
+  char *addr;
+  int fd, len;
+  struct stat sb;
+
+  if (argc < 2) {
+    fprintf(stderr, "%s file\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  fd = open(argv[1], O_RDONLY);
+  if (fd == -1)
+    handle_error("open");
+
+  if (fstat(fd, &sb) == -1)
+    handle_error("fstat");
+  len = sb.st_size;
+
+  addr = (char *)mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if (addr == MAP_FAILED)
+    handle_error("mmap");
+
   printf("\n================== loader =========================\n");
   char buff[200];
   pifVersion(buff, sizeof(buff));
@@ -181,10 +203,10 @@ int main() {
     showDeviceID(h);
     showTraceID(h);
     //  showUsercode(h);
-    configureXO2(h);
+    configureXO2(h, addr, len);
 
     pifClose(h);
-    }
+  }
 
   printf("==================== bye ==========================\n");
   return 0;
