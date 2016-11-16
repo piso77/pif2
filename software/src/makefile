@@ -22,6 +22,10 @@ LDFLAGS		= -shared -Wl,-soname,$(TARGET) -fvisibility=hidden
 $(TARGET): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
+pifload: $(OBJS)
+	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
+
+all: libpif.so pifload
 
 
 install:
@@ -33,4 +37,4 @@ install:
 .PHONY: clean
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o $(TARGET) pifload
