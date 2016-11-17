@@ -106,6 +106,7 @@ static uint8_t flipByte(int x) {
 static void configureXO2(pifHandle h, char *addr, int len) {
   int cfg_page_count = (len-1) / (CFG_PAGE_SIZE+1);
 
+  printf("len: %d cfg_page_count: %d\n", len, cfg_page_count);
   printf("\n----------------------------\n");
 
   pifWaitUntilNotBusy(h, -1);
@@ -141,10 +142,8 @@ static void configureXO2(pifHandle h, char *addr, int len) {
 
     pifProgCfgPage(h, frameData);
 
-    if (((pageNum+1) % 20)==0)
+    if ((pageNum % 25)==0)
       printf(".");
-    if (((pageNum+1) % 1000)==0)
-      printf("\n");
     }
   printf("\n");
 
