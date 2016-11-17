@@ -234,7 +234,7 @@ def configure(handle, fname, dev):
     for i in range(0, CFG_PAGE_SIZE) :
       frameData[i] = chr(frame[i])
     f = open("foobar/frameData%d.dat" % pageNum, "w")
-    f.write("%s" % frameData)
+    f.write(frameData.value)
     f.close()
     res = pifglobs.pif.pifProgCfgPage(handle, frameData)
     if (pageNum % 25) == 0:
