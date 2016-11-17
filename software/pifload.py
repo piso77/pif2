@@ -209,6 +209,8 @@ def configure(handle, fname, dev):
   if len(jedecData) == 0:
     return
 
+  pickle.dump(obj, open("foobar/jedecData.dat", "wb"))
+
   pifglobs.pif.pifWaitUntilNotBusy(handle, -1)
   showCfgStatus(handle)
 
@@ -226,10 +228,13 @@ def configure(handle, fname, dev):
   print('programming configuration flash ... '),
   frameData = create_string_buffer(CFG_PAGE_SIZE)
   numPages = len(jedecData);
+  print('numPages: ' + len)
   for pageNum in range(0, numPages) :
     frame = jedecData[pageNum]
+    pickle.dump(obj, open("foobar/frame"+pageNum+".dat", "wb"))
     for i in range(0, CFG_PAGE_SIZE) :
       frameData[i] = chr(frame[i])
+    pickle.dump(obj, open("foobar/frameData"+pageNum+".dat", "wb"))
     res = pifglobs.pif.pifProgCfgPage(handle, frameData)
     if (pageNum % 25) == 0:
       print('.') ,
