@@ -129,55 +129,32 @@ static void configureXO2(pifHandle h, FILE *fd) {
   pifInitCfgAddr(h);
   showCfgStatus(h);
   printf("programming configuration memory..\n"); // up to 2.2 secs in a -7000
-#if 0
-  uint8_t frameData[CFG_PAGE_SIZE];
-  for (int pageNum=0; pageNum<cfg_page_count; pageNum++) {
-    uint8_t rawData[CFG_PAGE_SIZE];
-
-    for (int i=0; i<CFG_PAGE_SIZE; i++) {
-      int dataIx = 1                        // header byte
-             + pageNum * (CFG_PAGE_SIZE+1)  // 16 bytes/frame + END_OF_FRAME
-             + i;
-      rawData[i] = (uint8_t)addr[dataIx];
-      }
-    for (int i=0; i<CFG_PAGE_SIZE; i++) {
-//    frameData[i] = flipByte(rawData[CFG_PAGE_SIZE-1-i]); // FlashCheck 'Preamble ERR'
-//    frameData[i] = flipByte(rawData[i]);           // no FlashCheck error but doesn't generate a 'done'
-      frameData[i] =          rawData[i] ;           // FlashCheck 'CMD ERR'
-      }
-
-    pifProgCfgPage(h, frameData);
-
-    if ((pageNum % 25)==0)
-      printf(".");
-  }
-#endif
-    while ((read = getline(&line, &len, fd)) != -1) {
-		uint8_t frameData[CFG_PAGE_SIZE];
-		uint8_t c;
-		char *tmp;
-		printf("Retrieved line[%d] of length: %zu\n", num, read);
-		num++;
-		printf("%s", line);
-		if (line[0] != '0' && line [0] != '1') {
-			if (machine == INITIAL)
-				continue;
-			if (machine == INDATA)
-				break;
-		}
-		machine = INDATA;
-		for (int i=0; i < CFG_PAGE_SIZE; i++) {
-			tmp = strndup(&line[i*8], 8);
-			c = (uint8_t)strtol(tmp, &eptr, 2);
-			printf("tmp: %s hex: 0x%02x\n", tmp, c);
-			frameData[i] = c;
-			free(tmp);
-		}
+  while ((read = getline(&line, &len, fd)) != -1) {
+    uint8_t frameData[CFG_PAGE_SIZE];
+    uint8_t c;
+    char *tmp;
+    //printf("Retrieved line[%d] of length: %zu\n", num, read);
+    num++;
+    //printf("%s", line);
+    if (line[0] != '0' && line [0] != '1') {
+      if (machine == INITIAL)
+        continue;
+      if (machine == INDATA)
+        break;
+    }
+    machine = INDATA;
+    for (int i=0; i < CFG_PAGE_SIZE; i++) {
+      tmp = strndup(&line[i*8], 8);
+      c = (uint8_t)strtol(tmp, &eptr, 2);
+      printf("tmp: %s hex: 0x%02x\n", tmp, c);
+      frameData[i] = c;
+      free(tmp);
+    }
     pifProgCfgPage(h, frameData);
     if ((num % 25)==0)
       printf(".");
-    }
-   printf("\n");
+  }
+  printf("\n");
 
   showCfgStatus(h);
 /*
@@ -197,7 +174,7 @@ static void configureXO2(pifHandle h, FILE *fd) {
   }
 
 #define handle_error(msg) \
-	do { perror(msg); exit(EXIT_FAILURE); } while (0)
+  do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 //---------------------------------------------------------------------
 int main(int argc, char *argv[]) {
