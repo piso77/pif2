@@ -23,10 +23,10 @@ $(TARGET): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 pifload: $(OBJS)
-	$(CXX) -o $@ pifload.cpp $(OBJS)
+	$(CXX) -o $@ $(CXXFLAGS) pifload.cpp $(OBJS)
 
 piffind: $(OBJS)
-	$(CXX) -o $@ piffind.cpp $(OBJS)
+	$(CXX) -o $@ $(CXXFLAGS) piffind.cpp $(OBJS)
 
 all: libpif.so pifload piffind
 
