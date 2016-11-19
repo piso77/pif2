@@ -11,6 +11,7 @@ using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "pifwrap.h"
 
@@ -103,10 +104,15 @@ static uint8_t flipByte(int x) {
   }
 
 //---------------------------------------------------------------------
-static void configureXO2(pifHandle h, char *addr, int len) {
-  int cfg_page_count = (len-1) / (CFG_PAGE_SIZE+1);
+enum state {INITIAL, INDATA};
 
-  printf("len: %d cfg_page_count: %d\n", len, cfg_page_count);
+static void configureXO2(pifHandle h, FILE *fd) {
+    char *line = NULL, *eptr;
+    int num = 0;
+    size_t len = 0;
+    ssize_t read;
+    enum state machine = INITIAL;
+
   printf("\n----------------------------\n");
 
   pifWaitUntilNotBusy(h, -1);
@@ -123,7 +129,7 @@ static void configureXO2(pifHandle h, char *addr, int len) {
   pifInitCfgAddr(h);
   showCfgStatus(h);
   printf("programming configuration memory..\n"); // up to 2.2 secs in a -7000
-
+#if 0
   uint8_t frameData[CFG_PAGE_SIZE];
   for (int pageNum=0; pageNum<cfg_page_count; pageNum++) {
     uint8_t rawData[CFG_PAGE_SIZE];
@@ -144,8 +150,34 @@ static void configureXO2(pifHandle h, char *addr, int len) {
 
     if ((pageNum % 25)==0)
       printf(".");
+  }
+#endif
+    while ((read = getline(&line, &len, fd)) != -1) {
+		uint8_t frameData[CFG_PAGE_SIZE];
+		uint8_t c;
+		char *tmp;
+		printf("Retrieved line[%d] of length: %zu\n", num, read);
+		num++;
+		printf("%s", line);
+		if (line[0] != '0' && line [0] != '1') {
+			if (machine == INITIAL)
+				continue;
+			if (machine == INDATA)
+				break;
+		}
+		machine = INDATA;
+		for (int i=0; i < CFG_PAGE_SIZE; i++) {
+			tmp = strndup(&line[i*8], 8);
+			c = (uint8_t)strtol(tmp, &eptr, 2);
+			printf("tmp: %s hex: 0x%02x\n", tmp, c);
+			frameData[i] = c;
+			free(tmp);
+		}
+    pifProgCfgPage(h, frameData);
+    if ((num % 25)==0)
+      printf(".");
     }
-  printf("\n");
+   printf("\n");
 
   showCfgStatus(h);
 /*
@@ -169,26 +201,17 @@ static void configureXO2(pifHandle h, char *addr, int len) {
 
 //---------------------------------------------------------------------
 int main(int argc, char *argv[]) {
-  char *addr;
-  int fd, len;
-  struct stat sb;
+  FILE *fd;
 
   if (argc < 2) {
     fprintf(stderr, "%s file\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
-  fd = open(argv[1], O_RDONLY);
-  if (fd == -1)
-    handle_error("open");
+  fd = fopen(argv[1], "r");
+  if (fd == NULL)
+    handle_error("fopen");
 
-  if (fstat(fd, &sb) == -1)
-    handle_error("fstat");
-  len = sb.st_size;
-
-  addr = (char *)mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  if (addr == MAP_FAILED)
-    handle_error("mmap");
 
   printf("\n================== loader =========================\n");
   char buff[200];
@@ -202,7 +225,7 @@ int main(int argc, char *argv[]) {
     showDeviceID(h);
     showTraceID(h);
     //  showUsercode(h);
-    configureXO2(h, addr, len);
+    configureXO2(h, fd);
 
     pifClose(h);
   }
