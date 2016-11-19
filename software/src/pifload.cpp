@@ -1,6 +1,3 @@
-//---------------------------------------------------------------------
-// pifload.cpp
-
 using namespace std;
 
 #include <string>
@@ -21,15 +18,13 @@ using namespace std;
 static const int MICROSEC = 1000;              // nanosecs
 static const int MILLISEC = 1000 * MICROSEC;   // nanosecs
 
-//---------------------------------------------------------------------
 static bool showDeviceID(pifHandle h) {
   uint32_t v = 0x12345678;
   bool res = pifGetDeviceIdCode(h, &v);
   printf("result=%d, ID code=%08x\n", res, v);
   return res;
-  }
+}
 
-//---------------------------------------------------------------------
 static bool showTraceID(pifHandle h) {
   uint8_t buff[8] = {1,2,3,4,5,6,7,8};
   bool res = pifGetTraceId(h, buff);
@@ -43,27 +38,23 @@ static bool showTraceID(pifHandle h) {
       }
     }
   return res;
-  }
+}
 
-//---------------------------------------------------------------------
 static int mcp(pifHandle h) {
   uint8_t r = 0;
   pifMcpRead(h, 9, &r);
   return r;
   }
 
-//---------------------------------------------------------------------
 static int INITn(pifHandle h) {
   int r = mcp(h);
   return (r >> 6) & 1;
   }
 
-//---------------------------------------------------------------------
 static void showCfgStatus(pifHandle h) {
   uint32_t status=0;
   pifGetStatusReg(h, &status);
 
-  /*printf("\n----------------------------");*/
   int init = INITn(h);
   printf("*** status = %8x, INITn = %d", status, init);
 
@@ -80,22 +71,21 @@ static void showCfgStatus(pifHandle h) {
     case 7: fcStatus = "SDM EOF";       break;
     }
   printf("  Done=%d, CfgEna=%d, Busy=%d, Fail=%d, FlashCheck=%s\n",
-            ((status >>  8) & 1),
-            ((status >>  9) & 1),
-            ((status >> 12) & 1),
-            ((status >> 13) & 1), fcStatus.c_str());
-  }
+    ((status >>  8) & 1),
+    ((status >>  9) & 1),
+    ((status >> 12) & 1),
+    ((status >> 13) & 1), fcStatus.c_str());
+}
 
 
-//---------------------------------------------------------------------
 enum state {INITIAL, INDATA};
 
 static void configureXO2(pifHandle h, FILE *fd) {
-    char *line = NULL, *eptr;
-    int num = 0;
-    size_t len = 0;
-    ssize_t read;
-    enum state machine = INITIAL;
+  char *line = NULL, *eptr;
+  int num = 0;
+  size_t len = 0;
+  ssize_t read;
+  enum state machine = INITIAL;
 
   printf("\n----------------------------\n");
 
@@ -113,6 +103,7 @@ static void configureXO2(pifHandle h, FILE *fd) {
   pifInitCfgAddr(h);
   showCfgStatus(h);
   printf("programming configuration memory..\n"); // up to 2.2 secs in a -7000
+
   while ((read = getline(&line, &len, fd)) != -1) {
     uint8_t frameData[CFG_PAGE_SIZE];
     uint8_t c;
@@ -141,12 +132,6 @@ static void configureXO2(pifHandle h, FILE *fd) {
   printf("\n");
 
   showCfgStatus(h);
-/*
-  for (int i=0; i<CFG_PAGE_SIZE; i++)
-    frameData[i] = 0xff;
-  pifProgCfgPage(h, frameData);
-  showCfgStatus(h);
-*/
 
   printf("programmed. transferring..\n");
   pifProgDone(h);
@@ -155,12 +140,11 @@ static void configureXO2(pifHandle h, FILE *fd) {
   pifDisableCfgInterface(h);
   showCfgStatus(h);
   printf("configuration done\n");
-  }
+}
 
 #define handle_error(msg) \
   do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
-//---------------------------------------------------------------------
 int main(int argc, char *argv[]) {
   FILE *fd;
 
@@ -173,7 +157,6 @@ int main(int argc, char *argv[]) {
   if (fd == NULL)
     handle_error("fopen");
 
-
   printf("\n================== loader =========================\n");
   char buff[200];
   pifVersion(buff, sizeof(buff));
@@ -181,18 +164,14 @@ int main(int argc, char *argv[]) {
 
   pifHandle h = NULL;
   h = pifInit();
-//printf("handle=%x\n", (unsigned)h);
   if (h) {
     showDeviceID(h);
     showTraceID(h);
     //  showUsercode(h);
     configureXO2(h, fd);
-
     pifClose(h);
   }
 
   printf("==================== bye ==========================\n");
   return 0;
-  }
-
-// EOF ----------------------------------------------------------------
+}
