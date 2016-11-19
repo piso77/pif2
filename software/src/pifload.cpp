@@ -86,22 +86,6 @@ static void showCfgStatus(pifHandle h) {
             ((status >> 13) & 1), fcStatus.c_str());
   }
 
-//---------------------------------------------------------------------
-static int flipNybble(int nyb) {
-  int x = nyb & 0xf;
-  int v = ((x & (1<<0)) << 3) |
-          ((x & (1<<1)) << 1) |
-          ((x & (1<<2)) >> 1) |
-          ((x & (1<<3)) >> 3);
-  return v;
-  }
-
-//---------------------------------------------------------------------
-static uint8_t flipByte(int x) {
-  int lo = x & 0xf, hi = (x>>4), v = 0;
-  v = flipNybble(hi) | (flipNybble(lo) << 4);
-  return (uint8_t)v;
-  }
 
 //---------------------------------------------------------------------
 enum state {INITIAL, INDATA};
