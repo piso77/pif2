@@ -13,7 +13,7 @@ int main() {
   pifHandle h = NULL;
   printf("\n====================hello==========================");
   h = pifInit();
-  printf("\nhandle=%x", (unsigned)h);
+  printf("\nhandle=%p", h);
 
   pifVersion(buff, sizeof(buff));
   printf("\n%s", buff);
