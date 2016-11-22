@@ -6,7 +6,7 @@ CCFLAGS		= $(UNIFLAGS)
 
 DEPS			= pif.h pifwrap.h lowlevel.h bcm2835.h llbufs.h
 OBJS			= pif.o pifwrap.o lowlevel.o bcm2835.o
-TARGET		= libpif.so
+TARGET			= libpif.so
 LIBS			= -lstdc++
 LDFLAGS		= -shared -Wl,-soname,$(TARGET) -fvisibility=hidden
 
@@ -22,10 +22,10 @@ LDFLAGS		= -shared -Wl,-soname,$(TARGET) -fvisibility=hidden
 $(TARGET): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
-pifload: $(OBJS)
+pifload: $(OBJS) pifload.o
 	$(CXX) -o $@ $(CXXFLAGS) pifload.cpp $(OBJS)
 
-piffind: $(OBJS)
+piffind: $(OBJS) piffind.o
 	$(CXX) -o $@ $(CXXFLAGS) piffind.cpp $(OBJS)
 
 all: libpif.so pifload piffind
