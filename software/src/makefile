@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := all
+
 UNIFLAGS	= -Wall -g -fPIC -I. -DBUILDING_LIBPIF -fvisibility=hidden
 CXX				= g++
 CXXFLAGS	= -ansi $(UNIFLAGS) -fvisibility-inlines-hidden
