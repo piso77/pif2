@@ -30,7 +30,10 @@ pifload: $(OBJS) pifload.o
 piffind: $(OBJS) piffind.o
 	$(CXX) -o $@ $(CXXFLAGS) piffind.cpp $(OBJS)
 
-all: libpif.so pifload piffind
+pifcli: $(OBJS) pifcli.o
+	$(CXX) -o $@ $(CXXFLAGS) pifcli.c $(OBJS)
+
+all: libpif.so pifload piffind pifcli
 
 
 install:
