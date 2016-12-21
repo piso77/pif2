@@ -83,7 +83,13 @@ struct opt opts[] = {
 };
 
 static void help() {
-	handle_error("Help me Popeye!\n");
+	int optind = 0;
+
+	printf("Available functions: \n");
+	while(opts[optind].name) {
+		printf("\t - %s\n", opts[optind].name);
+		optind++;
+	}
 }
 
 int main(int argc, char *argv[]) {
