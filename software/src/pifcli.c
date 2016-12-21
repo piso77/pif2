@@ -57,7 +57,24 @@ static void cfgstatus(void) {
 		((status >> 13) & 1), fcstatus);
 }
 
-static void erase(void) { printf("erase()\n"); }
+static void erase(void) {
+	printf("erase()\n");
+    pifWaitUntilNotBusy(h, -1);
+    pifDisableCfgInterface(h);
+    //showCfgStatus(h);
+    pifEnableCfgInterfaceOffline(h);
+    //showCfgStatus(h);
+
+    printf("erasing configuration memory..\n");
+    pifEraseCfg(h);
+    printf("erased..\n");
+
+	pifProgDone(h);
+	pifRefresh(h);
+	pifDisableCfgInterface(h);
+	//showCfgStatus(h);
+	printf("erase done\n");
+}
 
 struct opt opts[] = {
 	{ "erase", erase },
