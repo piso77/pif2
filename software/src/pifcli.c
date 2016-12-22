@@ -208,7 +208,6 @@ int main(int argc, char *argv[]) {
 			h = pifInit();
 			if (h) {
 				opts[optind].func(h);
-				pifClose(h);
 			}
 			break;
 		}
