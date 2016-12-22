@@ -10,9 +10,7 @@
 #define handle_error(msg) \
   do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
-pifHandle h;
-
-struct opt { const char *name; void (*func)(void); };
+struct opt { const char *name; void (*func)(pifHandle); };
 
 static int mcp(pifHandle h) {
 	uint8_t r = 0;
@@ -53,7 +51,7 @@ static bool showTraceID(pifHandle h) {
 	return res;
 }
 
-static void cfgstatus(void) {
+static void cfgstatus(pifHandle h) {
 	uint32_t errcode, status=0;
 	int init;
 	char *fcstatus;
@@ -84,7 +82,7 @@ static void cfgstatus(void) {
 		((status >> 13) & 1), fcstatus);
 }
 
-static void erase(void) {
+static void erase(pifHandle h) {
 	printf("erase()\n");
     pifWaitUntilNotBusy(h, -1);
     pifDisableCfgInterface(h);
@@ -103,7 +101,7 @@ static void erase(void) {
 	printf("erase done\n");
 }
 
-static void load(void) {
+static void load(pifHandle h) {
 	FILE *fd;
 
 	fd = fopen("/dev/stdin", "r");
@@ -138,6 +136,7 @@ static void help() {
 int main(int argc, char *argv[]) {
 	int optind = 0;
 	char buff[256];
+	pifHandle h;
 
 	pifVersion(buff, sizeof(buff));
 	printf("%s\n", buff);
@@ -149,9 +148,10 @@ int main(int argc, char *argv[]) {
 		if (strcmp(argv[1], opts[optind].name) == 0) {
 			printf("found %s\n", opts[optind].name);
 			h = pifInit();
-			if (h)
-				opts[optind].func();
-			pifClose(h);
+			if (h) {
+				opts[optind].func(h);
+				pifClose(h);
+			}
 			break;
 		}
 		optind++;
