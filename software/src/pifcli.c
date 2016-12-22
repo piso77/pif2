@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "pifwrap.h"
 
@@ -24,6 +25,30 @@ static int INITn(pifHandle h) {
 	int r = mcp(h);
 
 	return (r >> 6) & 1;
+}
+
+static bool showDeviceID(pifHandle h) {
+  uint32_t v = 0x12345678;
+  bool res = pifGetDeviceIdCode(h, &v);
+  printf("result=%d, ID code=%08x\n", res, v);
+  return res;
+}
+
+static bool showTraceID(pifHandle h) {
+  uint8_t buff[8] = {1,2,3,4,5,6,7,8};
+  bool res = pifGetTraceId(h, buff);
+  int i;
+
+  printf("result=%d, Trace ID code= ", res);
+  for (i=0; i<sizeof(buff); i++) {
+    printf("%02x", buff[i]);
+    switch(i) {
+      case 3 : printf("_");  break;
+      case 7 : printf("\n"); break;
+      default: printf(".");  break;
+      }
+    }
+  return res;
 }
 
 static void cfgstatus(void) {
@@ -76,8 +101,24 @@ static void erase(void) {
 	printf("erase done\n");
 }
 
+static void load(void) {
+	FILE *fd;
+
+	fd = fopen("/dev/stdin", "r");
+	if (fd == NULL)
+		handle_error("fopen");
+
+	printf("\n================== loader =========================\n");
+
+	showDeviceID(h);
+	showTraceID(h);
+	//  showUsercode(h);
+	//configureXO2(h, fd);
+}
+
 struct opt opts[] = {
 	{ "erase", erase },
+	{ "load", load },
 	{ "status", cfgstatus },
 	{ NULL, NULL }
 };
@@ -94,6 +135,10 @@ static void help() {
 
 int main(int argc, char *argv[]) {
 	int optind = 0;
+	char buff[256];
+
+	pifVersion(buff, sizeof(buff));
+	printf("%s\n", buff);
 
 	if (argc < 2)
 		help();
@@ -104,6 +149,7 @@ int main(int argc, char *argv[]) {
 			h = pifInit();
 			if (h)
 				opts[optind].func();
+			pifClose(h);
 			break;
 		}
 		optind++;
