@@ -6,6 +6,7 @@
 #include "pifwrap.h"
 
 /* command line tool to operate the fpga: status, erase, etc */
+const char *version = (const char *)("pifcli build: " __DATE__ " - " __TIME__);
 
 #define handle_error(msg) \
   do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -125,6 +126,7 @@ struct opt opts[] = {
 
 static void help() {
 	int optind = 0;
+	printf("%s\n\n", version);
 
 	printf("Available functions: \n");
 	while(opts[optind].name) {
@@ -135,11 +137,7 @@ static void help() {
 
 int main(int argc, char *argv[]) {
 	int optind = 0;
-	char buff[256];
 	pifHandle h;
-
-	pifVersion(buff, sizeof(buff));
-	printf("%s\n", buff);
 
 	if (argc < 2)
 		help();
