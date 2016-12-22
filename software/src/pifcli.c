@@ -58,12 +58,8 @@ static void cfgstatus(pifHandle h) {
 	char *fcstatus;
 
 	pifGetStatusReg(h, &status);
-
 	init = INITn(h);
 	printf("*** status = %8x, INITn = %d", status, init);
-
-	if (!init)
-		handle_error("INITn failed");
 
 	errcode = (status >> 23) & 7;
 	switch (errcode) {
