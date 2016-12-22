@@ -37,7 +37,7 @@ static bool showDeviceID(pifHandle h) {
 static bool showTraceID(pifHandle h) {
 	uint8_t buff[8] = {1,2,3,4,5,6,7,8};
 	bool res = pifGetTraceId(h, buff);
-	int i;
+	unsigned int i;
 
 	printf("result=%d, Trace ID code= ", res);
 	for (i=0; i<sizeof(buff); i++) {
