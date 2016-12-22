@@ -28,27 +28,29 @@ static int INITn(pifHandle h) {
 }
 
 static bool showDeviceID(pifHandle h) {
-  uint32_t v = 0x12345678;
-  bool res = pifGetDeviceIdCode(h, &v);
-  printf("result=%d, ID code=%08x\n", res, v);
-  return res;
+	uint32_t v = 0x12345678;
+	bool res;
+
+	res = pifGetDeviceIdCode(h, &v);
+	printf("result=%d, ID code=%08x\n", res, v);
+	return res;
 }
 
 static bool showTraceID(pifHandle h) {
-  uint8_t buff[8] = {1,2,3,4,5,6,7,8};
-  bool res = pifGetTraceId(h, buff);
-  int i;
+	uint8_t buff[8] = {1,2,3,4,5,6,7,8};
+	bool res = pifGetTraceId(h, buff);
+	int i;
 
-  printf("result=%d, Trace ID code= ", res);
-  for (i=0; i<sizeof(buff); i++) {
-    printf("%02x", buff[i]);
-    switch(i) {
-      case 3 : printf("_");  break;
-      case 7 : printf("\n"); break;
-      default: printf(".");  break;
-      }
-    }
-  return res;
+	printf("result=%d, Trace ID code= ", res);
+	for (i=0; i<sizeof(buff); i++) {
+		printf("%02x", buff[i]);
+		switch(i) {
+			case 3 : printf("_");  break;
+			case 7 : printf("\n"); break;
+			default: printf(".");  break;
+		}
+	}
+	return res;
 }
 
 static void cfgstatus(void) {
