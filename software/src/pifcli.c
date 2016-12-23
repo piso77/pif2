@@ -83,9 +83,9 @@ static void erase(pifHandle h) {
 	printf("erase()\n");
     pifWaitUntilNotBusy(h, -1);
     pifDisableCfgInterface(h);
-    //showCfgStatus(h);
+    cfgstatus(h);
     pifEnableCfgInterfaceOffline(h);
-    //showCfgStatus(h);
+    cfgstatus(h);
 
     printf("erasing configuration memory..\n");
     pifEraseCfg(h);
@@ -94,7 +94,7 @@ static void erase(pifHandle h) {
 	pifProgDone(h);
 	pifRefresh(h);
 	pifDisableCfgInterface(h);
-	//showCfgStatus(h);
+	cfgstatus(h);
 	printf("erase done\n");
 }
 
@@ -111,16 +111,16 @@ static void configureXO2(pifHandle h, FILE *fd) {
   pifWaitUntilNotBusy(h, -1);
 
   pifDisableCfgInterface(h);
-  //showCfgStatus(h);
+  cfgstatus(h);
   pifEnableCfgInterfaceOffline(h);
 
-  //showCfgStatus(h);
+  cfgstatus(h);
   printf("erasing configuration memory..\n");
   pifEraseCfg(h);
   printf("erased..\n");
 
   pifInitCfgAddr(h);
-  //showCfgStatus(h);
+  cfgstatus(h);
   printf("programming configuration memory..\n"); // up to 2.2 secs in a -7000
 
   while ((read = getline(&line, &len, fd)) != -1) {
@@ -150,14 +150,14 @@ static void configureXO2(pifHandle h, FILE *fd) {
   }
   printf("\n");
 
-  //showCfgStatus(h);
+  cfgstatus(h);
 
   printf("programmed. transferring..\n");
   pifProgDone(h);
   pifRefresh(h);
 
   pifDisableCfgInterface(h);
-  //showCfgStatus(h);
+  cfgstatus(h);
   printf("configuration done\n");
 }
 
