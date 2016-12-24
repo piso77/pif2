@@ -52,13 +52,25 @@ static bool showTraceID(pifHandle h) {
 	return res;
 }
 
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\n"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+
 static void cfgstatus(pifHandle h) {
 	uint32_t errcode, status=0;
-	int init;
+	int init, mcp23008;
 	char *fcstatus;
 
 	pifGetStatusReg(h, &status);
 	init = INITn(h);
+	mcp23008 = mcp(h);
 	printf("*** status = %8x, INITn = %d", status, init);
 
 	errcode = (status >> 23) & 7;
@@ -77,6 +89,7 @@ static void cfgstatus(pifHandle h) {
 		((status >>  9) & 1),
 		((status >> 12) & 1),
 		((status >> 13) & 1), fcstatus);
+	printf("mcp23008: "BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(mcp23008));
 }
 
 static void erase(pifHandle h) {
@@ -140,7 +153,7 @@ static void configureXO2(pifHandle h, FILE *fd) {
     for (i=0; i < CFG_PAGE_SIZE; i++) {
       tmp = strndup(&line[i*8], 8);
       c = (uint8_t)strtol(tmp, &eptr, 2);
-      printf("tmp: %s hex: 0x%02x\n", tmp, c);
+      //printf("tmp: %s hex: 0x%02x\n", tmp, c);
       frameData[i] = c;
       free(tmp);
     }
