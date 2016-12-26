@@ -731,6 +731,7 @@ int bcm2835_i2c_begin(void)
 {
     uint16_t cdiv;
 
+	printf("%s\n",__func__);
     if (   bcm2835_bsc0 == MAP_FAILED
 	|| bcm2835_bsc1 == MAP_FAILED)
       return 0; /* bcm2835_init() failed, or not root */
@@ -760,6 +761,7 @@ int bcm2835_i2c_begin(void)
 
 void bcm2835_i2c_end(void)
 {
+printf("%s\n",__func__);
 #ifdef I2C_V1
     /* Set all the I2C/BSC0 pins back to input */
     bcm2835_gpio_fsel(RPI_GPIO_P1_03, BCM2835_GPIO_FSEL_INPT); /* SDA */
@@ -779,6 +781,7 @@ void bcm2835_i2c_setSlaveAddress(uint8_t addr)
 #else	
     volatile uint32_t* paddr = bcm2835_bsc1 + BCM2835_BSC_A/4;
 #endif
+printf("%s\n",__func__);
     bcm2835_peri_write(paddr, addr);
 }
 
@@ -793,6 +796,7 @@ void bcm2835_i2c_setClockDivider(uint16_t divider)
 #else
     volatile uint32_t* paddr = bcm2835_bsc1 + BCM2835_BSC_DIV/4;
 #endif    
+printf("%s\n",__func__);
     bcm2835_peri_write(paddr, divider);
     /* Calculate time for transmitting one byte
     // 1000000 = micros seconds in a second
@@ -805,6 +809,7 @@ void bcm2835_i2c_setClockDivider(uint16_t divider)
 void bcm2835_i2c_set_baudrate(uint32_t baudrate)
 {
 	uint32_t divider;
+printf("%s\n",__func__);
 	/* use 0xFFFE mask to limit a max value and round down any odd number */
 	divider = (BCM2835_CORE_CLK_HZ / baudrate) & 0xFFFE;
 	bcm2835_i2c_setClockDivider( (uint16_t)divider );
@@ -828,6 +833,7 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
     uint32_t remaining = len;
     uint32_t i = 0;
     uint8_t reason = BCM2835_I2C_REASON_OK;
+printf("%s\n",__func__);
 
     /* Clear FIFO */
     bcm2835_peri_set_bits(control, BCM2835_BSC_C_CLEAR_1 , BCM2835_BSC_C_CLEAR_1 );
@@ -899,6 +905,7 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
     uint32_t remaining = len;
     uint32_t i = 0;
     uint8_t reason = BCM2835_I2C_REASON_OK;
+printf("%s\n",__func__);
 
     /* Clear FIFO */
     bcm2835_peri_set_bits(control, BCM2835_BSC_C_CLEAR_1 , BCM2835_BSC_C_CLEAR_1 );
@@ -973,6 +980,7 @@ uint8_t bcm2835_i2c_read_register_rs(char* regaddr, char* buf, uint32_t len)
 	uint32_t remaining = len;
     uint32_t i = 0;
     uint8_t reason = BCM2835_I2C_REASON_OK;
+printf("%s\n",__func__);
     
     /* Clear FIFO */
     bcm2835_peri_set_bits(control, BCM2835_BSC_C_CLEAR_1 , BCM2835_BSC_C_CLEAR_1 );
@@ -1065,6 +1073,7 @@ uint8_t bcm2835_i2c_write_read_rs(char* cmds, uint32_t cmds_len, char* buf, uint
     uint32_t remaining = cmds_len;
     uint32_t i = 0;
     uint8_t reason = BCM2835_I2C_REASON_OK;
+printf("%s\n",__func__);
     
     /* Clear FIFO */
     bcm2835_peri_set_bits(control, BCM2835_BSC_C_CLEAR_1 , BCM2835_BSC_C_CLEAR_1 );

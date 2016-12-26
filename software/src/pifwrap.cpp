@@ -13,6 +13,7 @@
   #define _XOPEN_SOURCE 600         // For PATH_MAX on linux
 #endif
 
+#include <stdio.h>
 #include <string.h>
 
 #include "pifwrap.h"
@@ -22,6 +23,7 @@
 
 //---------------------------------------------------------------------
 int pifVersion(char *outStr, int outLen) {
+printf("%s\n", __func__);
   if (outLen<=0)
     return 0;
   const char * retval = (const char *)("libpif," __DATE__ "," __TIME__);
@@ -32,90 +34,118 @@ int pifVersion(char *outStr, int outLen) {
   }
 
 int pifGetDeviceIdCode(pifHandle h, uint32_t* v) {
+printf("%s\n", __func__);
   return pPif->getDeviceIdCode(*v);
   }
 int pifGetStatusReg(pifHandle h, uint32_t* v) {
+printf("%s\n", __func__);
   return pPif->getStatusReg(*v);
   }
 int pifGetTraceId(pifHandle h, uint8_t* p) {
+printf("%s\n", __func__);
   return pPif->getTraceId(p);
   }
 int pifEnableCfgInterfaceOffline(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->enableCfgInterfaceOffline();
   }
 int pifEnableCfgInterfaceTransparent(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->enableCfgInterfaceTransparent();
   }
 int pifDisableCfgInterface(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->disableCfgInterface();
   }
 int pifRefresh(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->refresh();
   }
 int pifProgDone(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->progDone();
   }
 int pifErase(pifHandle h, int Amask) {
+printf("%s\n", __func__);
   return pPif->erase(Amask);
   }
 int pifEraseAll(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->eraseAll();
   }
 int pifInitCfgAddr(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->initCfgAddr();
   }
 int pifEraseCfg(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->eraseCfg();
   }
 int pifProgCfgPage(pifHandle h, const uint8_t *p) {
+printf("%s\n", __func__);
   return pPif->progCfgPage(p);
   }
 int pifReadCfgPages(pifHandle h, int numPages, uint8_t *p) {
+printf("%s\n", __func__);
   return pPif->readCfgPages(numPages, p);
   }
 int pifEraseUfm(pifHandle h) {
+printf("%s\n", __func__);
   return pPif->eraseUfm();
   }
 int pifReadUfmPages(pifHandle h, int numPages, uint8_t *p) {
+printf("%s\n", __func__);
   return pPif->readUfmPages(numPages, p);
   }
 int pifReadUfmPages(pifHandle h, int pageNumber, int numPages, uint8_t *p) {
+printf("%s\n", __func__);
   return pPif->readUfmPages(pageNumber, numPages, p);
   }
 int pifWriteUfmPages(pifHandle h, int pageNumber, int numPages, uint8_t *p) {
+printf("%s\n", __func__);
   return pPif->writeUfmPages(pageNumber, numPages, p);
   }
 int pifGetBusyFlag(pifHandle h, int *pFlag) {
+printf("%s\n", __func__);
   return pPif->getBusyFlag(pFlag);
   }
 int pifWaitUntilNotBusy(pifHandle h, int maxLoops) {
+printf("%s\n", __func__);
   return pPif->waitUntilNotBusy(maxLoops);
   }
 int pifSetUsercode(pifHandle h, uint8_t* p) {
+printf("%s\n", __func__);
   return pPif->setUsercode(p);
   }
 int pifGetUsercode(pifHandle h, uint8_t* p) {
+printf("%s\n", __func__);
   return pPif->getUsercode(p);
   }
 
 int pifMcpWrite(pifHandle h, uint8_t* p, int len) {
+printf("%s\n", __func__);
   return pPif->mcpWrite(p, len);
   }
 int pifMcpRead(pifHandle h, int reg, uint8_t* v) {
+printf("%s\n", __func__);
   return pPif->mcpRead(reg, v);
   }
 
 int pifAppRead(pifHandle h, uint8_t *p, int AnumBytes) {
+printf("%s\n", __func__);
   return pPif->appRead(p, AnumBytes);
   }
 int pifAppWrite(pifHandle h, uint8_t *p, int AnumBytes) {
+printf("%s\n", __func__);
   return pPif->appWrite(p, AnumBytes);
   }
 
 pifHandle pifInit() {
+  printf("%s\n", __func__);
   return (pifHandle)(new Tpif());
   }
 void pifClose(pifHandle h) {
+printf("%s\n", __func__);
   delete pPif;
   }
 
