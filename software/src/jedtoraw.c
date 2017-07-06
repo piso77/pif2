@@ -44,10 +44,11 @@ int main(int argc, char *argv[]) {
 			free(tmp);
 		}
 		//pifProgCfgPage(h, frameData);
-		if ((num % 25)==0)
-			printf(".");
+        fwrite(frameData, sizeof(uint8_t), CFG_PAGE_SIZE, fdo);
+		//if ((num % 25)==0)
+		//	printf(".");
 	}
-	printf("\n");
+	//printf("\n");
 	fclose(fd);
 	fclose(fdo);
 }
