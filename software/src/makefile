@@ -45,4 +45,4 @@ install:
 .PHONY: clean
 
 clean:
-	rm -f *.o $(TARGET) pifload piffind
+	rm -f *.o $(TARGET) pifload piffind pifcli
