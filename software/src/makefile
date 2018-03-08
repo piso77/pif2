@@ -33,7 +33,10 @@ piffind: $(OBJS) piffind.o
 pifcli: $(OBJS) pifcli.o
 	$(CXX) -o $@ $(CXXFLAGS) pifcli.c $(OBJS)
 
-all: libpif.so pifload piffind pifcli
+test-spi: test-spi.o
+	$(CXX) -o $@ $(CXXFLAGS) test-spi.c
+
+all: libpif.so pifload piffind pifcli test-spi
 
 
 install:
