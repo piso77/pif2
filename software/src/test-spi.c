@@ -169,24 +169,10 @@ void dump_status(int fd) {
 	print_status_reg(&buf);
 }
 
-
-int main(int argc, char *argv[]) {
+static void get_info(int fd) {
 	uint32_t buf;
 	uint64_t lbuf;
 	char reg[4];
-	int fd, speed = 10000;
-
-	fd = open(argv[1], O_RDWR);
-	if (fd < 0) {
-		perror("can't open spidev");
-		exit(EXIT_FAILURE);
-	}
-
-
-	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0) {
-		perror("SPI_IOC_WR_MAX_SPEED_HZ");
-		exit(EXIT_FAILURE);
-	}
 
 #if 0
 	// ISC_ENABLE_X
@@ -277,6 +263,24 @@ int main(int argc, char *argv[]) {
 	reg[3] = 0xff;
 	spi_xfer(fd, reg, sizeof(reg), NULL, 0);
 #endif
+}
 
+int main(int argc, char *argv[]) {
+	int fd, speed = 10000;
+
+	fd = open(argv[1], O_RDWR);
+	if (fd < 0) {
+		perror("can't open spidev");
+		exit(EXIT_FAILURE);
+	}
+
+
+	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0) {
+		perror("SPI_IOC_WR_MAX_SPEED_HZ");
+		exit(EXIT_FAILURE);
+	}
+
+
+	get_info(fd);
 	return EXIT_SUCCESS;
 }
