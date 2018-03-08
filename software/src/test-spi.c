@@ -303,17 +303,17 @@ int main(int argc, char *argv[]) {
 	if (fd < 0)
 		handle_error("can't open spidev");
 
-
 	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0)
 		handle_error("SPI_IOC_WR_MAX_SPEED_HZ");
 
-        while (opts[optind].name) {
-                if (strcmp(argv[2], opts[optind].name) == 0) {
-                        printf("found %s\n", opts[optind].name);
-                        opts[optind].func(fd);
+	while (opts[optind].name) {
+		if (strcmp(argv[2], opts[optind].name) == 0) {
+			printf("found %s\n", opts[optind].name);
+			opts[optind].func(fd);
 			break;
-                }
-                optind++;
-        }
-        exit(EXIT_SUCCESS);
+		}
+		optind++;
+	}
+	close(fd);
+	exit(EXIT_SUCCESS);
 }
