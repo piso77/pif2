@@ -10,6 +10,14 @@
 #include <linux/spi/spidev.h>
 #include <sys/ioctl.h>
 
+/* command line tool to operate the fpga: status, erase, etc */
+const char *version = (const char *)("test-spi build: " __DATE__ " - " __TIME__);
+
+struct opt { const char *name; void (*func)(int); };
+
+#define handle_error(msg) \
+  do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
 /* MachXO2 Programming Guide - sysCONFIG Programming Commands */
 
 #define IDCODE_PUB              {0xe0, 0x00, 0x00, 0x00}
@@ -115,10 +123,8 @@ int spi_xfer(int fd, char *reg, size_t sreg, void *buf, size_t sbuf) {
 	}
 	
 	ret = ioctl(fd, SPI_IOC_MESSAGE(len), xfer);
-	if (ret < 0) {
-		perror("ioctl() failed\n");
-		exit(EXIT_FAILURE);
-	}
+	if (ret < 0)
+		handle_error("ioctl() failed\n");
 	return ret;
 }
 
@@ -265,22 +271,49 @@ static void get_info(int fd) {
 #endif
 }
 
+struct opt opts[] = {
+        { "info", get_info },
+/*        { "load", load },
+        { "status", cfgstatus },
+*/
+        { NULL, NULL }
+};
+
+static void help() {
+        int optind = 0;
+        printf("%s\n\n", version);
+
+        printf("Available functions: \n");
+        while(opts[optind].name) {
+                printf("\t - %s\n", opts[optind].name);
+                optind++;
+        }
+}
+
 int main(int argc, char *argv[]) {
 	int fd, speed = 10000;
+	int optind = 0;
+
+	if (argc < 3) {
+                help();
+		exit(EXIT_FAILURE);
+	}
 
 	fd = open(argv[1], O_RDWR);
-	if (fd < 0) {
-		perror("can't open spidev");
-		exit(EXIT_FAILURE);
-	}
+	if (fd < 0)
+		handle_error("can't open spidev");
 
 
-	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0) {
-		perror("SPI_IOC_WR_MAX_SPEED_HZ");
-		exit(EXIT_FAILURE);
-	}
+	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0)
+		handle_error("SPI_IOC_WR_MAX_SPEED_HZ");
 
-
-	get_info(fd);
-	return EXIT_SUCCESS;
+        while (opts[optind].name) {
+                if (strcmp(argv[2], opts[optind].name) == 0) {
+                        printf("found %s\n", opts[optind].name);
+                        opts[optind].func(fd);
+			break;
+                }
+                optind++;
+        }
+        exit(EXIT_SUCCESS);
 }
