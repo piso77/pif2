@@ -77,6 +77,23 @@ void print_status_reg(unsigned int status) {
                 ((status >> 13) & 1), fcstatus);
 }
 
+
+void dump_status(int fd) {
+	int 	buf = 0;
+	char reg[4];
+
+	// LSC_READ_STATUS
+	reg[0] = 0x3c;
+	reg[1] = 0x00;
+	reg[2] = 0x00;
+	reg[3] = 0x00;
+	spi_xfer(fd, reg, sizeof(reg), &buf, sizeof(buf));
+	buf = swap_uint32(buf);
+	printf("LSC_READ_STATUS: 0x%08x\n", buf);
+	print_status_reg(buf);
+}
+
+
 int main(int argc, char *argv[]) {
 	uint32_t buf;
 	uint64_t lbuf;
@@ -114,17 +131,7 @@ int main(int argc, char *argv[]) {
 	spi_xfer(fd, reg, sizeof(reg), &buf, sizeof(buf));
 	printf("IDCODE_PUB: 0x%08x\n", swap_uint32(buf));
 
-	buf = 0;
-	lbuf = 0;
-	// LSC_READ_STATUS
-	reg[0] = 0x3c;
-	reg[1] = 0x00;
-	reg[2] = 0x00;
-	reg[3] = 0x00;
-	spi_xfer(fd, reg, sizeof(reg), &buf, sizeof(buf));
-	buf = swap_uint32(buf);
-	printf("LSC_READ_STATUS: 0x%08x\n", buf);
-	print_status_reg(buf);
+	dump_status(fd);
 
 	buf = 0;
 	lbuf = 0;
