@@ -69,27 +69,27 @@ struct opt { const char *name; void (*func)(int, char *); };
 #define BIT_WORD(nr)            ((nr) / BITS_PER_LONG)
 static inline int test_bit(int nr, const volatile unsigned long *addr)
 {
-    return 1UL & (addr[BIT_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
+	return 1UL & (addr[BIT_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
 }
 
 //! Byte swap unsigned short
 uint16_t swap_uint16( uint16_t val ) 
 {
-    return (val << 8) | (val >> 8 );
+	return (val << 8) | (val >> 8 );
 }
 
 //! Byte swap unsigned int
 uint32_t swap_uint32( uint32_t val )
 {
-    val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF ); 
-    return (val << 16) | (val >> 16);
+	val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF ); 
+	return (val << 16) | (val >> 16);
 }
 
 uint64_t swap_uint64( uint64_t val )
 {
-    val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
-    val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
-    return (val << 32) | (val >> 32);
+	val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
+	val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
+	return (val << 32) | (val >> 32);
 }
 
 int spi_xfer(int fd, uint8_t *reg, size_t sreg, void *buf, size_t sbuf) {
