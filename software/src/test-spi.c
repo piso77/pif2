@@ -13,7 +13,7 @@
 /* command line tool to operate the fpga: status, erase, etc */
 const char *version = (const char *)("test-spi build: " __DATE__ " - " __TIME__);
 
-struct opt { const char *name; void (*func)(int); };
+struct opt { const char *name; void (*func)(int, char *); };
 
 #define handle_error(msg) \
   do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -107,7 +107,7 @@ uint64_t swap_uint64( uint64_t val )
     return (val << 32) | (val >> 32);
 }
 
-int spi_xfer(int fd, char *reg, size_t sreg, void *buf, size_t sbuf) {
+int spi_xfer(int fd, uint8_t *reg, size_t sreg, void *buf, size_t sbuf) {
 	struct spi_ioc_transfer xfer[2];
 	int ret, len = 1;
 
@@ -137,7 +137,7 @@ static inline uint8_t get_err(long unsigned int *status) {
         return ((errbit2 << 2) | (errbit1 << 1) | errbit0) & ERRMASK;
 }
 
-static void print_status_reg(long unsigned int *status)
+static void print_status(long unsigned int *status)
 {
         char const *ferr;
 
@@ -160,9 +160,9 @@ static void print_status_reg(long unsigned int *status)
 }
 
 
-void dump_status(int fd) {
+long unsigned int get_status(int fd) {
 	long unsigned int buf = 0;
-	char reg[4];
+	uint8_t reg[4];
 
 	// LSC_READ_STATUS
 	reg[0] = 0x3c;
@@ -172,13 +172,14 @@ void dump_status(int fd) {
 	spi_xfer(fd, reg, sizeof(reg), &buf, sizeof(buf));
 	buf = swap_uint32(buf);
 	printf("LSC_READ_STATUS: 0x%08lx\n", buf);
-	print_status_reg(&buf);
+	return buf;
 }
 
-static void get_info(int fd) {
+static void get_info(int fd, char *foobar) {
 	uint32_t buf;
 	uint64_t lbuf;
-	char reg[4];
+	uint8_t reg[4];
+	long unsigned int status;
 
 #if 0
 	// ISC_ENABLE_X
@@ -199,7 +200,8 @@ static void get_info(int fd) {
 	spi_xfer(fd, reg, sizeof(reg), &buf, sizeof(buf));
 	printf("IDCODE_PUB: 0x%08x\n", swap_uint32(buf));
 
-	dump_status(fd);
+	status = get_status(fd);
+	print_status(&status);
 
 	buf = 0;
 	lbuf = 0;
@@ -271,8 +273,72 @@ static void get_info(int fd) {
 #endif
 }
 
+static void __erase(int fd) {
+	//char reg[4];
+	uint8_t enable[] = ISC_ENABLE;
+	uint8_t erase[] = ISC_ERASE;
+
+	// ISC_ENABLE
+	spi_xfer(fd, enable, sizeof(enable), NULL, 0);
+	// delay 5us or read_busy and(???) LSC_READ_STATUS and check busy
+	sleep(1);
+	// ISC_ERASE
+	spi_xfer(fd, erase, sizeof(erase), NULL, 0);
+	// LSC_READ_STATUS and wait_not_busy()
+	// LSC_READ_STATUS and check fail
+}
+
+static void __write(int fd, char *bitstream) {
+	//char reg[4];
+	int bstream;
+
+	printf("program(): %s\n", bitstream);
+	bstream = open(bitstream, O_RDONLY);
+	if (bstream < 0)
+		handle_error("can't open bitstream file");
+
+	// LSC_INITADDRESS
+	// loop:
+	// LSC_PROGINCRNV + 128bits
+}
+
+static void __done(int fd) {
+	//char reg[4];
+
+	// ISC_PROGRAMDONE
+	// LSC_READ_STATUS and check busy
+	// LSC_READ_STATUS and check done
+	// LSC_REFRESH
+	// wait tRefresh
+	// LSC_READ_STATUS and check success (and loop)
+}
+
+static void program(int fd, char *bitstream) {
+	//char reg[4];
+	int bstream;
+
+	printf("program(): %s\n", bitstream);
+	bstream = open(bitstream, O_RDONLY);
+	if (bstream < 0)
+		handle_error("can't open bitstream file");
+
+	// ISC_ENABLE
+	// delay 5us or read_busy and(???) LSC_READ_STATUS and check busy
+	// ISC_ERASE
+	// read_busy or(???) LSC_READ_STATUS
+	// LSC_READ_STATUS and check fail
+	// LSC_INITADDRESS + 128bits (and loop)
+	// ISC_PROGRAMDONE
+	// LSC_READ_STATUS and check busy
+	// LSC_READ_STATUS and check done
+	// LSC_REFRESH
+	// wait tRefresh
+	// LSC_READ_STATUS and check success (and loop)
+}
+
 struct opt opts[] = {
         { "info", get_info },
+	{ "program", program },
 /*        { "load", load },
         { "status", cfgstatus },
 */
@@ -309,7 +375,10 @@ int main(int argc, char *argv[]) {
 	while (opts[optind].name) {
 		if (strcmp(argv[2], opts[optind].name) == 0) {
 			printf("found %s\n", opts[optind].name);
-			opts[optind].func(fd);
+			if (argc == 4)
+				opts[optind].func(fd, argv[3]);
+			else
+				opts[optind].func(fd, NULL);
 			break;
 		}
 		optind++;
