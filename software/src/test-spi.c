@@ -273,10 +273,24 @@ static void get_info(int fd, char *foobar) {
 #endif
 }
 
-static void __erase(int fd) {
+#define MAXLOOP 32
+void wait_busy(int fd) {
+	int cnt = 0;
+	long unsigned int status;
+
+	do {
+		if (cnt == MAXLOOP)
+			handle_error("still BUSY, bailing out");
+		cnt++;
+		status = get_status(fd);
+	} while (test_bit(BUSY, &status));
+}
+
+static void erase(int fd, char *foobar) {
 	//char reg[4];
 	uint8_t enable[] = ISC_ENABLE;
 	uint8_t erase[] = ISC_ERASE;
+	long unsigned int status;
 
 	// ISC_ENABLE
 	spi_xfer(fd, enable, sizeof(enable), NULL, 0);
@@ -285,9 +299,14 @@ static void __erase(int fd) {
 	// ISC_ERASE
 	spi_xfer(fd, erase, sizeof(erase), NULL, 0);
 	// LSC_READ_STATUS and wait_not_busy()
+	wait_busy(fd);
 	// LSC_READ_STATUS and check fail
+	status = get_status(fd);
+	if (test_bit(FAIL, &status))
+		handle_error("failed to erase flash");
 }
 
+/*
 static void __write(int fd, char *bitstream) {
 	//char reg[4];
 	int bstream;
@@ -302,7 +321,7 @@ static void __write(int fd, char *bitstream) {
 	// LSC_PROGINCRNV + 128bits
 }
 
-static void __done(int fd) {
+static void done(int fd) {
 	//char reg[4];
 
 	// ISC_PROGRAMDONE
@@ -312,6 +331,7 @@ static void __done(int fd) {
 	// wait tRefresh
 	// LSC_READ_STATUS and check success (and loop)
 }
+*/
 
 static void program(int fd, char *bitstream) {
 	//char reg[4];
@@ -338,6 +358,7 @@ static void program(int fd, char *bitstream) {
 
 struct opt opts[] = {
         { "info", get_info },
+	{ "erase", erase },
 	{ "program", program },
 /*        { "load", load },
         { "status", cfgstatus },
