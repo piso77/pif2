@@ -69,7 +69,7 @@ struct opt { const char *name; void (*func)(int, char *); };
 #define BIT_WORD(nr)            ((nr) / BITS_PER_LONG)
 static inline int test_bit(int nr, const volatile unsigned long *addr)
 {
-	return 1UL & (addr[BIT_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
+	return (*addr >> nr) & 0x01;
 }
 
 //! Byte swap unsigned short
@@ -156,8 +156,15 @@ long unsigned int get_status(int fd) {
 	reg[3] = 0x00;
 	spi_xfer(fd, reg, sizeof(reg), &buf, sizeof(buf));
 	buf = swap_uint32(buf);
-	printf("LSC_READ_STATUS: 0x%08lx\n", buf);
+	//printf("LSC_READ_STATUS: 0x%08lx\n", buf);
 	return buf;
+}
+
+void dump_status(int fd) {
+	long unsigned int status;
+
+	status = get_status(fd);
+	print_status(&status);
 }
 
 static void get_info(int fd, char *foobar) {
@@ -258,7 +265,7 @@ static void get_info(int fd, char *foobar) {
 #endif
 }
 
-#define MAXLOOP 32
+#define MAXLOOP 1024
 void wait_busy(int fd) {
 	int cnt = 0;
 	long unsigned int status;
@@ -277,12 +284,16 @@ static void erase(int fd, char *foobar) {
 	uint8_t erase[] = ISC_ERASE;
 	long unsigned int status;
 
+	dump_status(fd);
 	// ISC_ENABLE
 	spi_xfer(fd, enable, sizeof(enable), NULL, 0);
 	// delay 5us or read_busy and(???) LSC_READ_STATUS and check busy
+	dump_status(fd);
 	sleep(1);
+	dump_status(fd);
 	// ISC_ERASE
 	spi_xfer(fd, erase, sizeof(erase), NULL, 0);
+	dump_status(fd);
 	// LSC_READ_STATUS and wait_not_busy()
 	wait_busy(fd);
 	// LSC_READ_STATUS and check fail
@@ -305,18 +316,28 @@ static void __write(int fd, char *bitstream) {
 	// loop:
 	// LSC_PROGINCRNV + 128bits
 }
-
-static void done(int fd) {
+*/
+static void done(int fd, char *foobar) {
 	//char reg[4];
+	uint8_t pdone[] = ISC_PROGRAMDONE;
+	uint8_t refresh[] = LSC_REFRESH;
+    long unsigned int status;
 
 	// ISC_PROGRAMDONE
-	// LSC_READ_STATUS and check busy
+    spi_xfer(fd, pdone, sizeof(pdone), NULL, 0);
+    sleep(1);
+	dump_status(fd);
 	// LSC_READ_STATUS and check done
+    status = get_status(fd);
+	if (test_bit(DONE, &status))
+		handle_error("done bit not set");
 	// LSC_REFRESH
+    spi_xfer(fd, refresh, sizeof(refresh), NULL, 0);
 	// wait tRefresh
+    sleep(5);
 	// LSC_READ_STATUS and check success (and loop)
+    dump_status(fd);
 }
-*/
 
 static void program(int fd, char *bitstream) {
 	//char reg[4];
@@ -342,9 +363,10 @@ static void program(int fd, char *bitstream) {
 }
 
 struct opt opts[] = {
-        { "info", get_info },
+    { "info", get_info },
 	{ "erase", erase },
 	{ "program", program },
+    { "done", done },
 /*        { "load", load },
         { "status", cfgstatus },
 */
