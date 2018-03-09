@@ -43,16 +43,6 @@ struct opt { const char *name; void (*func)(int, char *); };
 #define MACHXO2_PAGE_SIZE       16
 
 /* Status register bits and error codes */
-#ifdef __BIG_ENDIAN
-#define BUSY    20
-#define DONE    16
-#define DVER    3
-#define ENAB    17
-#define ERRBIT0 15
-#define ERRBIT1 0
-#define ERRBIT2 1
-#define FAIL    21
-#else
 #define BUSY    12
 #define DONE    8
 #define DVER    27
@@ -61,7 +51,6 @@ struct opt { const char *name; void (*func)(int, char *); };
 #define ERRBIT1 24
 #define ERRBIT2 25
 #define FAIL    13
-#endif
 #define ERRMASK 7
 
 #define ENOERR  0 /* no error */
