@@ -64,11 +64,7 @@ struct opt { const char *name; void (*func)(int, char *); };
 
 #define RX_LEN 32
 
-#ifdef CONFIG_64BIT
-#define BITS_PER_LONG 64
-#else
-#define BITS_PER_LONG 32
-#endif /* CONFIG_64BIT */
+#define BITS_PER_LONG (sizeof(long) * 8)
 
 #define BIT_WORD(nr)            ((nr) / BITS_PER_LONG)
 static inline int test_bit(int nr, const volatile unsigned long *addr)
