@@ -302,10 +302,13 @@ static void erase(int fd, char *foobar) {
 		handle_error("failed to erase flash");
 }
 
-/*
 static void __write(int fd, char *bitstream) {
 	//char reg[4];
-	int bstream;
+	int bstream, len;
+    uint8_t initaddr[] = LSC_INITADDRESS;
+    #define LINE 16
+    #define OP 4
+    uint8_t buf[LINE+OP] = LSC_PROGINCRNV;
 
 	printf("program(): %s\n", bitstream);
 	bstream = open(bitstream, O_RDONLY);
@@ -313,10 +316,22 @@ static void __write(int fd, char *bitstream) {
 		handle_error("can't open bitstream file");
 
 	// LSC_INITADDRESS
-	// loop:
+    spi_xfer(fd, initaddr, sizeof(initaddr), NULL, 0);
 	// LSC_PROGINCRNV + 128bits
+    do {
+       len = read(bstream, &buf[OP], LINE);
+        if (len == 0) // EOF?
+            break;
+        if (len < LINE) {
+            close(bstream);
+            handle_error("malformed bistream file");
+        }
+        spi_xfer(fd, buf, LINE+OP, NULL, 0);
+        wait_busy(fd);
+    } while(1);
+    close(bstream);
 }
-*/
+
 static void done(int fd, char *foobar) {
 	//char reg[4];
 	uint8_t pdone[] = ISC_PROGRAMDONE;
@@ -367,6 +382,7 @@ struct opt opts[] = {
 	{ "erase", erase },
 	{ "program", program },
     { "done", done },
+    { "write", __write },
 /*        { "load", load },
         { "status", cfgstatus },
 */
