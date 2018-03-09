@@ -302,7 +302,7 @@ static void erase(int fd, char *foobar) {
 		handle_error("failed to erase flash");
 }
 
-static void __write(int fd, char *bitstream) {
+static void load(int fd, char *bitstream) {
 	//char reg[4];
 	int bstream, len;
     uint8_t initaddr[] = LSC_INITADDRESS;
@@ -354,39 +354,12 @@ static void done(int fd, char *foobar) {
     dump_status(fd);
 }
 
-static void program(int fd, char *bitstream) {
-	//char reg[4];
-	int bstream;
-
-	printf("program(): %s\n", bitstream);
-	bstream = open(bitstream, O_RDONLY);
-	if (bstream < 0)
-		handle_error("can't open bitstream file");
-
-	// ISC_ENABLE
-	// delay 5us or read_busy and(???) LSC_READ_STATUS and check busy
-	// ISC_ERASE
-	// read_busy or(???) LSC_READ_STATUS
-	// LSC_READ_STATUS and check fail
-	// LSC_INITADDRESS + 128bits (and loop)
-	// ISC_PROGRAMDONE
-	// LSC_READ_STATUS and check busy
-	// LSC_READ_STATUS and check done
-	// LSC_REFRESH
-	// wait tRefresh
-	// LSC_READ_STATUS and check success (and loop)
-}
-
 struct opt opts[] = {
     { "info", get_info },
 	{ "erase", erase },
-	{ "program", program },
+    { "load", load },
     { "done", done },
-    { "write", __write },
-/*        { "load", load },
-        { "status", cfgstatus },
-*/
-        { NULL, NULL }
+    { NULL, NULL }
 };
 
 static void help() {
