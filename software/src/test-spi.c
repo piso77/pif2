@@ -329,7 +329,7 @@ static void done(int fd, char *foobar) {
 	dump_status(fd);
 	// LSC_READ_STATUS and check done
     status = get_status(fd);
-	if (test_bit(DONE, &status))
+	if (!test_bit(DONE, &status))
 		handle_error("done bit not set");
 	// LSC_REFRESH
     spi_xfer(fd, refresh, sizeof(refresh), NULL, 0);
