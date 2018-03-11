@@ -43,8 +43,6 @@ struct opt { const char *name; void (*func)(int, char *); };
 #define MACHXO2_PAGE_SIZE       16
 
 /* Status register bits and error codes */
-#define ERRMASK 7
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define BUSY    12
 #define DONE    8
 #define DVER    27
@@ -52,19 +50,8 @@ struct opt { const char *name; void (*func)(int, char *); };
 #define ERRBIT0 23
 #define ERRBIT1 24
 #define ERRBIT2 25
+#define ERRMASK 7
 #define FAIL    13
-#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define BUSY    20
-#define DONE    16
-#define DVER    3
-#define ENAB    17
-#define ERRBIT0 15
-#define ERRBIT1 0
-#define ERRBIT2 1
-#define FAIL    21
-#else
-#error __BYTE_ORDER__ undefined???
-#endif
 
 #define ENOERR  0 /* no error */
 #define EID     1
