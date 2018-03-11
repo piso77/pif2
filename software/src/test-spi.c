@@ -85,6 +85,7 @@ static inline int test_bit(int nr, const volatile unsigned long *addr)
 	return (*addr >> nr) & 0x01;
 }
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 //! Byte swap unsigned short
 uint16_t swap_uint16( uint16_t val ) 
 {
@@ -104,6 +105,15 @@ uint64_t swap_uint64( uint64_t val )
 	val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
 	return (val << 32) | (val >> 32);
 }
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+// in BE we don't need to swap the values read
+// from machxo2, so make these null
+uint16_t swap_uint16( uint16_t val ) { return val; }
+uint32_t swap_uint32( uint32_t val ) { return val; }
+uint64_t swap_uint64( uint64_t val ) { return val; }
+#else
+#error __BYTE_ORDER__ undefined???
+#endif
 
 int spi_xfer(int fd, uint8_t *reg, size_t sreg, void *buf, size_t sbuf) {
 	struct spi_ioc_transfer xfer[2];
