@@ -170,7 +170,7 @@ long unsigned int get_status(int fd) {
 	return buf;
 }
 
-void dump_status(int fd) {
+void dump_status(int fd, char *foobar) {
 	long unsigned int status;
 
 	status = get_status(fd);
@@ -294,16 +294,16 @@ static void erase(int fd, char *foobar) {
 	uint8_t erase[] = ISC_ERASE;
 	long unsigned int status;
 
-	dump_status(fd);
+	dump_status(fd, NULL);
 	// ISC_ENABLE
 	spi_xfer(fd, enable, sizeof(enable), NULL, 0);
 	// delay 5us or read_busy and(???) LSC_READ_STATUS and check busy
-	dump_status(fd);
+	dump_status(fd, NULL);
 	sleep(1);
-	dump_status(fd);
+	dump_status(fd, NULL);
 	// ISC_ERASE
 	spi_xfer(fd, erase, sizeof(erase), NULL, 0);
-	dump_status(fd);
+	dump_status(fd, NULL);
 	// LSC_READ_STATUS and wait_not_busy()
 	wait_busy(fd);
 	// LSC_READ_STATUS and check fail
@@ -351,7 +351,7 @@ static void done(int fd, char *foobar) {
 	// ISC_PROGRAMDONE
     spi_xfer(fd, pdone, sizeof(pdone), NULL, 0);
     sleep(1);
-	dump_status(fd);
+	dump_status(fd, NULL);
 	// LSC_READ_STATUS and check done
     status = get_status(fd);
 	if (!test_bit(DONE, &status))
@@ -361,7 +361,7 @@ static void done(int fd, char *foobar) {
 	// wait tRefresh
     sleep(5);
 	// LSC_READ_STATUS and check success (and loop)
-    dump_status(fd);
+    dump_status(fd, NULL);
 }
 
 struct opt opts[] = {
@@ -369,6 +369,7 @@ struct opt opts[] = {
 	{ "erase", erase },
     { "load", load },
     { "done", done },
+    { "status", dump_status },
     { NULL, NULL }
 };
 
