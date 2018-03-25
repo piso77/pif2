@@ -132,7 +132,7 @@ static inline uint8_t get_err(long unsigned int *status) {
         return ((errbit2 << 2) | (errbit1 << 1) | errbit0) & ERRMASK;
 }
 
-static void print_status(long unsigned int *status)
+static void parse_status(long unsigned int *status)
 {
         char const *ferr;
 
@@ -174,7 +174,7 @@ void dump_status(int fd) {
 	long unsigned int status;
 
 	status = get_status(fd);
-	print_status(&status);
+	parse_status(&status);
 }
 
 static void get_info(int fd, char *foobar) {
@@ -203,7 +203,7 @@ static void get_info(int fd, char *foobar) {
 	printf("IDCODE_PUB: 0x%08x\n", swap_uint32(buf));
 
 	status = get_status(fd);
-	print_status(&status);
+	parse_status(&status);
 
 	buf = 0;
 	lbuf = 0;
