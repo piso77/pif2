@@ -180,7 +180,7 @@ void dump_status(int fd) {
 	parse_status(&status);
 }
 
-void print_status(int num, ...) {
+void lattice_status_reg(int num, ...) {
 	va_list valist;
 	int fd;
 
@@ -190,7 +190,7 @@ void print_status(int num, ...) {
 	dump_status(fd);
 }
 
-static void get_info(int num, ...) {
+static void lattice_full_info(int num, ...) {
 	va_list valist;
 	int fd;
 	uint32_t buf;
@@ -307,7 +307,7 @@ void wait_busy(int fd) {
 	} while (test_bit(BUSY, &status));
 }
 
-static void erase(int num, ...) {
+static void lattice_erase(int num, ...) {
 	va_list valist;
 	int fd;
 	//char reg[4];
@@ -337,7 +337,7 @@ static void erase(int num, ...) {
 		handle_error("failed to erase flash");
 }
 
-static void load(int num, ...) {
+static void lattice_load(int num, ...) {
 	va_list valist;
 	int fd;
 	char *bitstream;
@@ -376,7 +376,7 @@ static void load(int num, ...) {
 }
 
 #define MACHXO2_MAX_REFRESH_LOOP 1024
-static void done(int num, ...) {
+static void lattice_done(int num, ...) {
 	va_list valist;
 	int fd;
 	//char reg[4];
@@ -412,7 +412,7 @@ static void done(int num, ...) {
 	dump_status(fd);
 }
 
-static void spi_info(int num, ...) {
+static void get_spi_bus_info(int num, ...) {
 	va_list valist;
 	int file;
 	__u8    mode, lsb, bits;
@@ -487,25 +487,25 @@ int main(int argc, char *argv[]) {
 		switch (c)
 		{
 			case 'd':
-				func = done;
+				func = lattice_done;
 			break;
 			case 'e':
-				func = erase;
+				func = lattice_erase;
 			break;
 			case 'i':
-				func = get_info;
+				func = lattice_full_info;
 			break;
 			case 's':
-				func = spi_info;
+				func = get_spi_bus_info;
 			break;
 			case 'p':
-				func = print_status;
+				func = lattice_status_reg;
 			break;
 			case 'f':
 				device = optarg;
 			break;
 			case 'l':
-				func = load;
+				func = lattice_load;
 				bitstream = optarg;
 			break;
 			case '?':
