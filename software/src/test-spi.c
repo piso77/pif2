@@ -275,7 +275,7 @@ static void get_info(int fd, char *foobar) {
 #endif
 }
 
-#define MAXLOOP 1024
+#define MAXLOOP 4096
 void wait_busy(int fd) {
 	int cnt = 0;
 	long unsigned int status;
@@ -342,11 +342,12 @@ static void load(int fd, char *bitstream) {
     close(bstream);
 }
 
+#define MACHXO2_MAX_REFRESH_LOOP 1024
 static void done(int fd, char *foobar) {
 	//char reg[4];
 	uint8_t pdone[] = ISC_PROGRAMDONE;
 	uint8_t refresh[] = LSC_REFRESH;
-    long unsigned int status;
+    long unsigned int status, refreshloop = 0;
 
 	// ISC_PROGRAMDONE
     spi_xfer(fd, pdone, sizeof(pdone), NULL, 0);
@@ -356,11 +357,19 @@ static void done(int fd, char *foobar) {
     status = get_status(fd);
 	if (!test_bit(DONE, &status))
 		handle_error("done bit not set");
-	// LSC_REFRESH
-    spi_xfer(fd, refresh, sizeof(refresh), NULL, 0);
-	// wait tRefresh
-    sleep(5);
-	// LSC_READ_STATUS and check success (and loop)
+    do {
+        // LSC_REFRESH
+        spi_xfer(fd, refresh, sizeof(refresh), NULL, 0);
+        // wait tRefresh
+        sleep(5);
+        // LSC_READ_STATUS and check success (and loop)
+        status = get_status(fd);
+        if (!test_bit(BUSY, &status) && test_bit(DONE, &status) &&
+            get_err(&status) == ENOERR)
+                break;
+        if (++refreshloop == MACHXO2_MAX_REFRESH_LOOP)
+            handle_error("refresh failed");
+    } while (1);
     dump_status(fd, NULL);
 }
 
