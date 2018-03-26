@@ -475,6 +475,16 @@ static void get_spi_bus_info(int num, ...) {
 	printf("spi mode %d, %d bits %sper word, %d Hz max\n", mode, bits, lsb ? "(lsb first) " : "", speed);
 }
 
+void help(char *arg) {
+	printf("Usage: %s -f spidevicefile [-d|-e|-i|-l bitstreamfile|-s|-p]\n\n", arg);
+	printf("-d: start a fpga refrsh cycle\n");
+	printf("-e: erase fpga flash\n");
+	printf("-i: get fpga complete info\n");
+	printf("-l bitstreamfile: load bitstreamfile into fpga non-volatile area\n");
+	printf("-s: get fpga status register\n");
+	printf("-p: print SPI bus status\n");
+}
+
 int main(int argc, char *argv[]) {
 	int c, fd, speed = 8000000;
 	char *device = NULL;
@@ -514,6 +524,7 @@ int main(int argc, char *argv[]) {
 				else
 					fprintf (stderr, "Unknown option character `\\x%x'.\n",
 						optopt);
+				help(argv[0]);
 			return 1;
 			default:
 				abort ();
