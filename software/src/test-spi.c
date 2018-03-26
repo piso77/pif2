@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -13,7 +14,7 @@
 /* command line tool to operate the fpga: status, erase, etc */
 const char *version = (const char *)("test-spi build: " __DATE__ " - " __TIME__);
 
-struct opt { const char *name; void (*func)(int, char *); };
+struct opt { const char *name; void (*func)(int, ...); };
 
 #define handle_error(msg) \
   do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -171,18 +172,34 @@ long unsigned int get_status(int fd) {
 	return buf;
 }
 
-void dump_status(int fd, char *foobar) {
+void dump_status(int fd) {
 	long unsigned int status;
 
 	status = get_status(fd);
 	parse_status(&status);
 }
 
-static void get_info(int fd, char *foobar) {
+void print_status(int num, ...) {
+	va_list valist;
+	int fd;
+
+	va_start(valist, num);
+	fd = va_arg(valist, int);
+	va_end(valist);
+	dump_status(fd);
+}
+
+static void get_info(int num, ...) {
+	va_list valist;
+	int fd;
 	uint32_t buf;
 	uint64_t lbuf;
 	uint8_t reg[4];
 	long unsigned int status;
+
+	va_start(valist, num);
+	fd = va_arg(valist, int);
+	va_end(valist);
 
 #if 0
 	// ISC_ENABLE_X
@@ -289,22 +306,28 @@ void wait_busy(int fd) {
 	} while (test_bit(BUSY, &status));
 }
 
-static void erase(int fd, char *foobar) {
+static void erase(int num, ...) {
+	va_list valist;
+	int fd;
 	//char reg[4];
 	uint8_t enable[] = ISC_ENABLE;
 	uint8_t erase[] = ISC_ERASE;
 	long unsigned int status;
 
-	dump_status(fd, NULL);
+	va_start(valist, num);
+	fd = va_arg(valist, int);
+	va_end(valist);
+
+	dump_status(fd);
 	// ISC_ENABLE
 	spi_xfer(fd, enable, sizeof(enable), NULL, 0);
 	// delay 5us or read_busy and(???) LSC_READ_STATUS and check busy
-	dump_status(fd, NULL);
+	dump_status(fd);
 	sleep(1);
-	dump_status(fd, NULL);
+	dump_status(fd);
 	// ISC_ERASE
 	spi_xfer(fd, erase, sizeof(erase), NULL, 0);
-	dump_status(fd, NULL);
+	dump_status(fd);
 	// LSC_READ_STATUS and wait_not_busy()
 	wait_busy(fd);
 	// LSC_READ_STATUS and check fail
@@ -313,13 +336,21 @@ static void erase(int fd, char *foobar) {
 		handle_error("failed to erase flash");
 }
 
-static void load(int fd, char *bitstream) {
+static void load(int num, ...) {
+	va_list valist;
+	int fd;
+	char *bitstream;
 	//char reg[4];
 	int bstream, len;
 	uint8_t initaddr[] = LSC_INITADDRESS;
 	#define LINE 16
 	#define OP 4
 	uint8_t buf[LINE+OP] = LSC_PROGINCRNV;
+
+	va_start(valist, num);
+	fd = va_arg(valist, int);
+	bitstream = va_arg(valist, char *);
+	va_end(valist);
 
 	printf("program(): %s\n", bitstream);
 	bstream = open(bitstream, O_RDONLY);
@@ -344,16 +375,22 @@ static void load(int fd, char *bitstream) {
 }
 
 #define MACHXO2_MAX_REFRESH_LOOP 1024
-static void done(int fd, char *foobar) {
+static void done(int num, ...) {
+	va_list valist;
+	int fd;
 	//char reg[4];
 	uint8_t pdone[] = ISC_PROGRAMDONE;
 	uint8_t refresh[] = LSC_REFRESH;
 	long unsigned int status, refreshloop = 0;
 
+	va_start(valist, num);
+	fd = va_arg(valist, int);
+	va_end(valist);
+
 	// ISC_PROGRAMDONE
 	spi_xfer(fd, pdone, sizeof(pdone), NULL, 0);
 	sleep(1);
-	dump_status(fd, NULL);
+	dump_status(fd);
 	// LSC_READ_STATUS and check done
 	status = get_status(fd);
 	if (!test_bit(DONE, &status))
@@ -371,12 +408,18 @@ static void done(int fd, char *foobar) {
 		if (++refreshloop == MACHXO2_MAX_REFRESH_LOOP)
 			handle_error("refresh failed");
 	} while (1);
-	dump_status(fd, NULL);
+	dump_status(fd);
 }
 
-static void spi_info(int file, char *foobar) {
+static void spi_info(int num, ...) {
+	va_list valist;
+	int file;
 	__u8    mode, lsb, bits;
 	__u32 speed=2500000;
+
+	va_start(valist, num);
+	file = va_arg(valist, int);
+	va_end(valist);
 
 	///////////////
 	// Verifications
@@ -436,7 +479,7 @@ struct opt opts[] = {
 	{ "erase", erase },
 	{ "load", load },
 	{ "done", done },
-	{ "status", dump_status },
+	{ "status", print_status },
 	{ "spi", spi_info },
 	{ NULL, NULL }
 };
@@ -473,11 +516,11 @@ int main(int argc, char *argv[]) {
 			printf("found %s\n", opts[optind].name);
 			if (strcmp("load", opts[optind].name) == 0) {
 				if (argc == 4)
-					opts[optind].func(fd, argv[3]);
+					opts[optind].func(2, fd, argv[3]);
 				else
 					handle_error("load requires the fw file as a parameter");
 			} else
-				opts[optind].func(fd, NULL);
+				opts[optind].func(1, fd);
 			break;
 		}
 		optind++;
