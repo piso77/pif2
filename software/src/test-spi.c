@@ -476,7 +476,7 @@ static void spi_info(int num, ...) {
 }
 
 int main(int argc, char *argv[]) {
-	int c, fd, speed = 10000;
+	int c, fd, speed = 8000000;
 	char *device = NULL;
 	char *bitstream = NULL;
 	void (*func)(int, ...);
