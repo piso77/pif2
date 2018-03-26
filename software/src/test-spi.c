@@ -471,9 +471,12 @@ int main(int argc, char *argv[]) {
 	while (opts[optind].name) {
 		if (strcmp(argv[2], opts[optind].name) == 0) {
 			printf("found %s\n", opts[optind].name);
-			if (argc == 4)
-				opts[optind].func(fd, argv[3]);
-			else
+			if (strcmp("load", opts[optind].name) == 0) {
+				if (argc == 4)
+					opts[optind].func(fd, argv[3]);
+				else
+					handle_error("load requires the fw file as a parameter");
+			} else
 				opts[optind].func(fd, NULL);
 			break;
 		}
