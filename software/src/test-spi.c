@@ -364,12 +364,70 @@ static void done(int fd, char *foobar) {
     dump_status(fd, NULL);
 }
 
+static void spi_info(int file, char *foobar) {
+    __u8    mode, lsb, bits;
+    __u32 speed=2500000;
+
+    ///////////////
+        // Verifications
+        ///////////////
+        //possible modes: mode |= SPI_LOOP; mode |= SPI_CPHA; mode |= SPI_CPOL;
+        //mode |= SPI_LSB_FIRST; mode |= SPI_CS_HIGH; mode |= SPI_3WIRE; mode |=
+        //SPI_NO_CS; mode |= SPI_READY;
+        //multiple possibilities using |
+        /*
+            if (ioctl(file, SPI_IOC_WR_MODE, &mode)<0) {
+                perror("can't set spi mode");
+                return;
+                }
+        */
+
+            if (ioctl(file, SPI_IOC_RD_MODE, &mode) < 0)
+                {
+                perror("SPI rd_mode");
+                return;
+                }
+            if (ioctl(file, SPI_IOC_RD_LSB_FIRST, &lsb) < 0)
+                {
+                perror("SPI rd_lsb_fist");
+                return;
+                }
+        //sunxi supports only 8 bits
+        /*
+            if (ioctl(file, SPI_IOC_WR_BITS_PER_WORD, (__u8[1]){8})<0)
+                {
+                perror("can't set bits per word");
+                return;
+                }
+        */
+            if (ioctl(file, SPI_IOC_RD_BITS_PER_WORD, &bits) < 0)
+                {
+                perror("SPI bits_per_word");
+                return;
+                }
+        /*
+            if (ioctl(file, SPI_IOC_WR_MAX_SPEED_HZ, &speed)<0)
+                {
+                perror("can't set max speed hz");
+                return;
+                }
+        */
+            if (ioctl(file, SPI_IOC_RD_MAX_SPEED_HZ, &speed) < 0)
+                {
+                perror("SPI max_speed_hz");
+                return;
+                }
+
+    printf("spi mode %d, %d bits %sper word, %d Hz max\n", mode, bits, lsb ? "(lsb first) " : "", speed);
+}
+
 struct opt opts[] = {
     { "info", get_info },
 	{ "erase", erase },
     { "load", load },
     { "done", done },
     { "status", dump_status },
+    { "spi", spi_info },
     { NULL, NULL }
 };
 
