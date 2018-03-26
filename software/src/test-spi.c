@@ -116,7 +116,7 @@ int spi_xfer(int fd, uint8_t *reg, size_t sreg, void *buf, size_t sbuf) {
 		xfer[1].len = sbuf;
 		len = 2;
 	}
-	
+
 	ret = ioctl(fd, SPI_IOC_MESSAGE(len), xfer);
 	if (ret < 0)
 		handle_error("ioctl() failed\n");
@@ -124,34 +124,35 @@ int spi_xfer(int fd, uint8_t *reg, size_t sreg, void *buf, size_t sbuf) {
 }
 
 static inline uint8_t get_err(long unsigned int *status) {
-        uint8_t errbit0, errbit1, errbit2;
+	uint8_t errbit0, errbit1, errbit2;
 
-        errbit0 = (*status >> ERRBIT0) & 0x01;
-        errbit1 = (*status >> ERRBIT1) & 0x01;
-        errbit2 = (*status >> ERRBIT2) & 0x01;
-        return ((errbit2 << 2) | (errbit1 << 1) | errbit0) & ERRMASK;
+	errbit0 = (*status >> ERRBIT0) & 0x01;
+	errbit1 = (*status >> ERRBIT1) & 0x01;
+	errbit2 = (*status >> ERRBIT2) & 0x01;
+	return ((errbit2 << 2) | (errbit1 << 1) | errbit0) & ERRMASK;
 }
 
 static void parse_status(long unsigned int *status)
 {
-        char const *ferr;
+	char const *ferr;
 
-        switch (get_err(status)) {
-                case ENOERR: ferr = "No Error";         break;
-                case EID: ferr = "ID ERR";              break;
-                case ECMD: ferr = "CMD ERR";            break;
-                case ECRC: ferr = "CRC ERR";            break;
-                case EPREAM: ferr = "Preamble ERR";     break;
-                case EABRT: ferr = "Abort ERR";         break;
-                case EOVERFL: ferr = "Overflow ERR";    break;
-                case ESDMEOF: ferr = "SDM EOF";         break;
-                default: ferr = "0xDEADBEF0";
-        }
-        printf("machxo2 status: 0x%08lX - done=%d, cfgena=%d, busy=%d, fail=%d,"
-               " devver=%d, err=%s\n",
-                *status, test_bit(DONE, status), test_bit(ENAB, status),
-                test_bit(BUSY, status), test_bit(FAIL, status),
-                test_bit(DVER, status), ferr);
+	switch (get_err(status)) {
+		case ENOERR: ferr = "No Error";         break;
+		case EID: ferr = "ID ERR";              break;
+		case ECMD: ferr = "CMD ERR";            break;
+		case ECRC: ferr = "CRC ERR";            break;
+		case EPREAM: ferr = "Preamble ERR";     break;
+		case EABRT: ferr = "Abort ERR";         break;
+		case EOVERFL: ferr = "Overflow ERR";    break;
+		case ESDMEOF: ferr = "SDM EOF";         break;
+		default: ferr = "0xDEADBEF0";
+	}
+
+	printf("machxo2 status: 0x%08lX - done=%d, cfgena=%d, busy=%d, fail=%d,"
+	" devver=%d, err=%s\n",
+		*status, test_bit(DONE, status), test_bit(ENAB, status),
+		test_bit(BUSY, status), test_bit(FAIL, status),
+		test_bit(DVER, status), ferr);
 }
 
 
@@ -315,10 +316,10 @@ static void erase(int fd, char *foobar) {
 static void load(int fd, char *bitstream) {
 	//char reg[4];
 	int bstream, len;
-    uint8_t initaddr[] = LSC_INITADDRESS;
-    #define LINE 16
-    #define OP 4
-    uint8_t buf[LINE+OP] = LSC_PROGINCRNV;
+	uint8_t initaddr[] = LSC_INITADDRESS;
+	#define LINE 16
+	#define OP 4
+	uint8_t buf[LINE+OP] = LSC_PROGINCRNV;
 
 	printf("program(): %s\n", bitstream);
 	bstream = open(bitstream, O_RDONLY);
@@ -326,20 +327,20 @@ static void load(int fd, char *bitstream) {
 		handle_error("can't open bitstream file");
 
 	// LSC_INITADDRESS
-    spi_xfer(fd, initaddr, sizeof(initaddr), NULL, 0);
+	spi_xfer(fd, initaddr, sizeof(initaddr), NULL, 0);
 	// LSC_PROGINCRNV + 128bits
-    do {
-       len = read(bstream, &buf[OP], LINE);
-        if (len == 0) // EOF?
-            break;
-        if (len < LINE) {
-            close(bstream);
-            handle_error("malformed bistream file");
-        }
-        spi_xfer(fd, buf, LINE+OP, NULL, 0);
-        wait_busy(fd);
-    } while(1);
-    close(bstream);
+	do {
+		len = read(bstream, &buf[OP], LINE);
+		if (len == 0) // EOF?
+			break;
+		if (len < LINE) {
+			close(bstream);
+			handle_error("malformed bistream file");
+		}
+		spi_xfer(fd, buf, LINE+OP, NULL, 0);
+		wait_busy(fd);
+	} while(1);
+	close(bstream);
 }
 
 #define MACHXO2_MAX_REFRESH_LOOP 1024
@@ -347,108 +348,108 @@ static void done(int fd, char *foobar) {
 	//char reg[4];
 	uint8_t pdone[] = ISC_PROGRAMDONE;
 	uint8_t refresh[] = LSC_REFRESH;
-    long unsigned int status, refreshloop = 0;
+	long unsigned int status, refreshloop = 0;
 
 	// ISC_PROGRAMDONE
-    spi_xfer(fd, pdone, sizeof(pdone), NULL, 0);
-    sleep(1);
+	spi_xfer(fd, pdone, sizeof(pdone), NULL, 0);
+	sleep(1);
 	dump_status(fd, NULL);
 	// LSC_READ_STATUS and check done
-    status = get_status(fd);
+	status = get_status(fd);
 	if (!test_bit(DONE, &status))
-		handle_error("done bit not set");
-    do {
-        // LSC_REFRESH
-        spi_xfer(fd, refresh, sizeof(refresh), NULL, 0);
-        // wait tRefresh
-        sleep(5);
-        // LSC_READ_STATUS and check success (and loop)
-        status = get_status(fd);
-        if (!test_bit(BUSY, &status) && test_bit(DONE, &status) &&
-            get_err(&status) == ENOERR)
-                break;
-        if (++refreshloop == MACHXO2_MAX_REFRESH_LOOP)
-            handle_error("refresh failed");
-    } while (1);
-    dump_status(fd, NULL);
+	handle_error("done bit not set");
+	do {
+		// LSC_REFRESH
+		spi_xfer(fd, refresh, sizeof(refresh), NULL, 0);
+		// wait tRefresh
+		sleep(5);
+		// LSC_READ_STATUS and check success (and loop)
+		status = get_status(fd);
+		if (!test_bit(BUSY, &status) && test_bit(DONE, &status) &&
+			get_err(&status) == ENOERR)
+				break;
+		if (++refreshloop == MACHXO2_MAX_REFRESH_LOOP)
+			handle_error("refresh failed");
+	} while (1);
+	dump_status(fd, NULL);
 }
 
 static void spi_info(int file, char *foobar) {
-    __u8    mode, lsb, bits;
-    __u32 speed=2500000;
+	__u8    mode, lsb, bits;
+	__u32 speed=2500000;
 
-    ///////////////
-        // Verifications
-        ///////////////
-        //possible modes: mode |= SPI_LOOP; mode |= SPI_CPHA; mode |= SPI_CPOL;
-        //mode |= SPI_LSB_FIRST; mode |= SPI_CS_HIGH; mode |= SPI_3WIRE; mode |=
-        //SPI_NO_CS; mode |= SPI_READY;
-        //multiple possibilities using |
-        /*
-            if (ioctl(file, SPI_IOC_WR_MODE, &mode)<0) {
-                perror("can't set spi mode");
-                return;
-                }
-        */
+	///////////////
+	// Verifications
+	///////////////
+	//possible modes: mode |= SPI_LOOP; mode |= SPI_CPHA; mode |= SPI_CPOL;
+	//mode |= SPI_LSB_FIRST; mode |= SPI_CS_HIGH; mode |= SPI_3WIRE; mode |=
+	//SPI_NO_CS; mode |= SPI_READY;
+	//multiple possibilities using |
+	/*
+	if (ioctl(file, SPI_IOC_WR_MODE, &mode)<0) {
+	perror("can't set spi mode");
+	return;
+	}
+	*/
 
-            if (ioctl(file, SPI_IOC_RD_MODE, &mode) < 0)
-                {
-                perror("SPI rd_mode");
-                return;
-                }
-            if (ioctl(file, SPI_IOC_RD_LSB_FIRST, &lsb) < 0)
-                {
-                perror("SPI rd_lsb_fist");
-                return;
-                }
-        //sunxi supports only 8 bits
-        /*
-            if (ioctl(file, SPI_IOC_WR_BITS_PER_WORD, (__u8[1]){8})<0)
-                {
-                perror("can't set bits per word");
-                return;
-                }
-        */
-            if (ioctl(file, SPI_IOC_RD_BITS_PER_WORD, &bits) < 0)
-                {
-                perror("SPI bits_per_word");
-                return;
-                }
-        /*
-            if (ioctl(file, SPI_IOC_WR_MAX_SPEED_HZ, &speed)<0)
-                {
-                perror("can't set max speed hz");
-                return;
-                }
-        */
-            if (ioctl(file, SPI_IOC_RD_MAX_SPEED_HZ, &speed) < 0)
-                {
-                perror("SPI max_speed_hz");
-                return;
-                }
+	if (ioctl(file, SPI_IOC_RD_MODE, &mode) < 0)
+	{
+		perror("SPI rd_mode");
+		return;
+	}
+	if (ioctl(file, SPI_IOC_RD_LSB_FIRST, &lsb) < 0)
+	{
+		perror("SPI rd_lsb_fist");
+		return;
+	}
+	//sunxi supports only 8 bits
+	/*
+	if (ioctl(file, SPI_IOC_WR_BITS_PER_WORD, (__u8[1]){8})<0)
+	{
+	perror("can't set bits per word");
+	return;
+	}
+	*/
+	if (ioctl(file, SPI_IOC_RD_BITS_PER_WORD, &bits) < 0)
+	{
+		perror("SPI bits_per_word");
+		return;
+	}
+	/*
+	if (ioctl(file, SPI_IOC_WR_MAX_SPEED_HZ, &speed)<0)
+	{
+	perror("can't set max speed hz");
+	return;
+	}
+	*/
+	if (ioctl(file, SPI_IOC_RD_MAX_SPEED_HZ, &speed) < 0)
+	{
+		perror("SPI max_speed_hz");
+		return;
+	}
 
-    printf("spi mode %d, %d bits %sper word, %d Hz max\n", mode, bits, lsb ? "(lsb first) " : "", speed);
+	printf("spi mode %d, %d bits %sper word, %d Hz max\n", mode, bits, lsb ? "(lsb first) " : "", speed);
 }
 
 struct opt opts[] = {
-    { "info", get_info },
+	{ "info", get_info },
 	{ "erase", erase },
-    { "load", load },
-    { "done", done },
-    { "status", dump_status },
-    { "spi", spi_info },
-    { NULL, NULL }
+	{ "load", load },
+	{ "done", done },
+	{ "status", dump_status },
+	{ "spi", spi_info },
+	{ NULL, NULL }
 };
 
 static void help() {
-        int optind = 0;
-        printf("%s\n\n", version);
+	int optind = 0;
+	printf("%s\n\n", version);
 
-        printf("Available functions: \n");
-        while(opts[optind].name) {
-                printf("\t - %s\n", opts[optind].name);
-                optind++;
-        }
+	printf("Available functions: \n");
+	while(opts[optind].name) {
+		printf("\t - %s\n", opts[optind].name);
+		optind++;
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -456,7 +457,7 @@ int main(int argc, char *argv[]) {
 	int optind = 0;
 
 	if (argc < 3) {
-                help();
+		help();
 		exit(EXIT_FAILURE);
 	}
 
