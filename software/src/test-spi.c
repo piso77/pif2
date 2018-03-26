@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -474,57 +475,58 @@ static void spi_info(int num, ...) {
 	printf("spi mode %d, %d bits %sper word, %d Hz max\n", mode, bits, lsb ? "(lsb first) " : "", speed);
 }
 
-struct opt opts[] = {
-	{ "info", get_info },
-	{ "erase", erase },
-	{ "load", load },
-	{ "done", done },
-	{ "status", print_status },
-	{ "spi", spi_info },
-	{ NULL, NULL }
-};
-
-static void help() {
-	int optind = 0;
-	printf("%s\n\n", version);
-
-	printf("Available functions: \n");
-	while(opts[optind].name) {
-		printf("\t - %s\n", opts[optind].name);
-		optind++;
-	}
-}
-
 int main(int argc, char *argv[]) {
-	int fd, speed = 10000;
-	int optind = 0;
+	int c, fd, speed = 10000;
+	char *device = NULL;
+	char *bitstream = NULL;
+	void (*func)(int, ...);
 
-	if (argc < 3) {
-		help();
-		exit(EXIT_FAILURE);
-	}
+	opterr = 0;
 
-	fd = open(argv[1], O_RDWR);
+	while ((c = getopt (argc, argv, "def:il:sp")) != -1)
+		switch (c)
+		{
+			case 'd':
+				func = done;
+			break;
+			case 'e':
+				func = erase;
+			break;
+			case 'i':
+				func = get_info;
+			break;
+			case 's':
+				func = spi_info;
+			break;
+			case 'p':
+				func = print_status;
+			break;
+			case 'f':
+				device = optarg;
+			break;
+			case 'l':
+				func = load;
+				bitstream = optarg;
+			break;
+			case '?':
+				if (isprint (optopt))
+					fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+				else
+					fprintf (stderr, "Unknown option character `\\x%x'.\n",
+						optopt);
+			return 1;
+			default:
+				abort ();
+		}
+
+	fd = open(device, O_RDWR);
 	if (fd < 0)
 		handle_error("can't open spidev");
 
 	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0)
 		handle_error("SPI_IOC_WR_MAX_SPEED_HZ");
 
-	while (opts[optind].name) {
-		if (strcmp(argv[2], opts[optind].name) == 0) {
-			printf("found %s\n", opts[optind].name);
-			if (strcmp("load", opts[optind].name) == 0) {
-				if (argc == 4)
-					opts[optind].func(2, fd, argv[3]);
-				else
-					handle_error("load requires the fw file as a parameter");
-			} else
-				opts[optind].func(1, fd);
-			break;
-		}
-		optind++;
-	}
+	func(2, fd, bitstream);
 	close(fd);
 	exit(EXIT_SUCCESS);
 }
