@@ -52,7 +52,7 @@ static bool showTraceID(pifHandle h) {
 	return res;
 }
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\n"
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   (byte & 0x80 ? '1' : '0'), \
   (byte & 0x40 ? '1' : '0'), \
@@ -67,8 +67,9 @@ static void cfgstatus(pifHandle h) {
 	uint32_t errcode, status=0;
 	int init, mcp23008;
 	char *fcstatus;
-	uint16_t fbits = 0xffff;
+	uint16_t fbits;
 	uint64_t frow;
+	uint8_t fb0, fb1;
 
 	pifGetStatusReg(h, &status);
 	pifEnableCfgInterfaceTransparent(h);
@@ -95,7 +96,10 @@ static void cfgstatus(pifHandle h) {
 		((status >>  9) & 1),
 		((status >> 12) & 1),
 		((status >> 13) & 1), fcstatus);
-	printf("mcp23008: "BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(mcp23008));
+	printf("mcp23008: "BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(mcp23008));
+	fb0 = ((uint8_t *)&fbits)[0];
+	fb1 = ((uint8_t *)&fbits)[1];
+	printf("fbits: "BYTE_TO_BINARY_PATTERN""BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(fb1), BYTE_TO_BINARY(fb0));
 }
 
 static void erase(pifHandle h) {
