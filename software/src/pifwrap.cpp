@@ -41,6 +41,14 @@ int pifGetStatusReg(pifHandle h, uint32_t* v) {
 printf("%s\n", __func__);
   return pPif->getStatusReg(*v);
   }
+int pifGetFeatureBits(pifHandle h, uint16_t* v) {
+printf("%s\n", __func__);
+  return pPif->getFeatureBits(*v);
+  }
+int pifGetFeatureRow(pifHandle h, uint64_t* v) {
+printf("%s\n", __func__);
+  return pPif->getFeatureRow(*v);
+  }
 int pifGetTraceId(pifHandle h, uint8_t* p) {
 printf("%s\n", __func__);
   return pPif->getTraceId(p);

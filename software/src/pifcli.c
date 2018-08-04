@@ -67,11 +67,17 @@ static void cfgstatus(pifHandle h) {
 	uint32_t errcode, status=0;
 	int init, mcp23008;
 	char *fcstatus;
+	uint16_t fbits = 0xffff;
+	uint64_t frow;
 
 	pifGetStatusReg(h, &status);
+	pifEnableCfgInterfaceTransparent(h);
+	pifGetFeatureBits(h, &fbits);
+	pifGetFeatureRow(h, &frow);
+	pifDisableCfgInterface(h);
 	init = INITn(h);
 	mcp23008 = mcp(h);
-	printf("*** status = %8x, INITn = %d", status, init);
+	printf("*** status = %8x, fbits = %2x frow = %16llx INITn = %d", status, fbits, frow, init);
 
 	errcode = (status >> 23) & 7;
 	switch (errcode) {

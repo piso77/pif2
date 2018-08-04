@@ -47,6 +47,8 @@ PIF_API int pifVersion(char *outStr, int outLen);
 PIF_API int  pifGetDeviceIdCode(pifHandle h, uint32_t* v);
 
 PIF_API int  pifGetStatusReg(pifHandle h, uint32_t* v);
+PIF_API int  pifGetFeatureBits(pifHandle h, uint16_t* v);
+PIF_API int  pifGetFeatureRow(pifHandle h, uint64_t* v);
 PIF_API int  pifGetTraceId(pifHandle h, uint8_t* p);
 
 PIF_API int  pifEnableCfgInterfaceOffline(pifHandle h);

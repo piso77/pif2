@@ -158,6 +158,9 @@ Non-Volatile Register (NVR) Commands
 #define READ_USERCODE           0xc0
 #define ISC_PROGRAM_USERCODE    0xc2
 
+#define LSC_READ_FEATURE	0xe7
+#define LSC_READ_FEABITS	0xfb
+
 static const int MICROSEC = 1000;              // nanosecs
 static const int MILLISEC = 1000 * MICROSEC;   // nanosecs
 
@@ -170,10 +173,24 @@ void Tpif::shortSleep(int ns) {
   }
 
 //---------------------------------------------------------------------
+uint16_t Tpif::_wordBE(uint8_t *p) {
+  uint16_t v = 0;
+  for (int i=0; i<2; i++)
+    v = (v<<8) | (uint16_t)(*p++);
+  return v;
+  }
+
 uint32_t Tpif::_dwordBE(uint8_t *p) {
   uint32_t v = 0;
   for (int i=0; i<4; i++)
     v = (v<<8) | (uint32_t)(*p++);
+  return v;
+  }
+
+uint64_t Tpif::_qwordBE(uint8_t *p) {
+  uint64_t v = 0;
+  for (int i=0; i<8; i++)
+    v = (v<<8) | (uint64_t)(*p++);
   return v;
   }
 
@@ -214,6 +231,28 @@ bool Tpif::getStatusReg(uint32_t& v) {
   uint8_t p[4];
   bool ok = _cfgWriteRead(oBuf, p, 4);
   v = _dwordBE(p);
+  return ok;
+  }
+
+bool Tpif::getFeatureBits(uint16_t& v) {
+  v = 0;
+  TllWrBuf oBuf;
+  oBuf.byte(LSC_READ_FEABITS).byte(0).byte(0).byte(0);
+
+  uint8_t p[2];
+  bool ok = _cfgWriteRead(oBuf, p, 2);
+  v = _wordBE(p);
+  return ok;
+  }
+
+bool Tpif::getFeatureRow(uint64_t& v) {
+  v = 0;
+  TllWrBuf oBuf;
+  oBuf.byte(LSC_READ_FEATURE).byte(0).byte(0).byte(0);
+
+  uint8_t p[8];
+  bool ok = _cfgWriteRead(oBuf, p, 8);
+  v = _qwordBE(p);
   return ok;
   }
 

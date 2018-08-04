@@ -31,7 +31,9 @@ class Tpif {
   private:
     TlowLevel *pLo;
 
+    uint16_t _wordBE(uint8_t *p);
     uint32_t _dwordBE(uint8_t *p);
+    uint64_t _qwordBE(uint8_t *p);
     bool _cfgWrite(TllWrBuf& oBuf);
     bool _cfgWriteRead(TllWrBuf& oBuf, uint8_t *pRdData, size_t ArdLen);
 
@@ -53,6 +55,8 @@ class Tpif {
     bool getDeviceIdCode(uint32_t& v);
 
     bool getStatusReg(uint32_t& v);
+    bool getFeatureBits(uint16_t& v);
+    bool getFeatureRow(uint64_t& v);
     bool getTraceId(uint8_t* p);
 
     bool enableCfgInterfaceOffline();
