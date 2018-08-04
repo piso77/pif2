@@ -63,6 +63,38 @@ static bool showTraceID(pifHandle h) {
   (byte & 0x02 ? '1' : '0'), \
   (byte & 0x01 ? '1' : '0') 
 
+static void enablejtag(pifHandle h) {
+	uint64_t frow;
+	uint16_t fbits;
+
+	pifEnableCfgInterfaceTransparent(h);
+	pifGetFeatureBits(h, &fbits);
+	pifGetFeatureRow(h, &frow);
+	fbits &= 0xfeff;
+	pifDisableCfgInterface(h);
+
+	pifWaitUntilNotBusy(h, -1);
+	//cfgstatus(h);
+	pifEnableCfgInterfaceOffline(h);
+	//cfgstatus(h);
+
+	printf("erasing all...\n");
+	//pifEraseAll(h);
+	printf("done...\n");
+	//pifSetFeatureRow(h, frow);
+	// delay 200us
+	//pifGetFeatureRow(h, &frow);
+	//pifSetFeatureBits(h, fbits);
+	// delay 200us
+	//pifGetFeatureBits(h, &fbits);
+
+	pifProgDone(h);
+	// delay 200us
+	pifRefresh(h);
+	pifDisableCfgInterface(h);
+
+}
+
 static void cfgstatus(pifHandle h) {
 	uint32_t errcode, status=0;
 	int init, mcp23008;
@@ -99,7 +131,7 @@ static void cfgstatus(pifHandle h) {
 	printf("mcp23008: "BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(mcp23008));
 	fb0 = ((uint8_t *)&fbits)[0];
 	fb1 = ((uint8_t *)&fbits)[1];
-	printf("fbits: "BYTE_TO_BINARY_PATTERN""BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(fb1), BYTE_TO_BINARY(fb0));
+	printf("fbits: "BYTE_TO_BINARY_PATTERN"|"BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(fb1), BYTE_TO_BINARY(fb0));
 }
 
 static void erase(pifHandle h) {
@@ -204,6 +236,7 @@ struct opt opts[] = {
 	{ "erase", erase },
 	{ "load", load },
 	{ "status", cfgstatus },
+	{ "jtag", enablejtag },
 	{ NULL, NULL }
 };
 

@@ -160,6 +160,7 @@ Non-Volatile Register (NVR) Commands
 
 #define LSC_READ_FEATURE	0xe7
 #define LSC_READ_FEABITS	0xfb
+#define LSC_PROG_FEABITS	0xf8
 
 static const int MICROSEC = 1000;              // nanosecs
 static const int MILLISEC = 1000 * MICROSEC;   // nanosecs
@@ -242,6 +243,17 @@ bool Tpif::getFeatureBits(uint16_t& v) {
   uint8_t p[2];
   bool ok = _cfgWriteRead(oBuf, p, 2);
   v = _wordBE(p);
+  return ok;
+  }
+
+bool Tpif::setFeatureBits(uint16_t v) {
+  TllWrBuf oBuf;
+  int hi = (v >> 8) & 0xff;
+  int lo = (v >> 0) & 0xff;
+  printf("v: %2x\n", v);
+  oBuf.byte(LSC_PROG_FEABITS).byte(0).byte(0).byte(0).byte(hi).byte(lo);
+
+  bool ok = _cfgWrite(oBuf);
   return ok;
   }
 

@@ -45,6 +45,10 @@ int pifGetFeatureBits(pifHandle h, uint16_t* v) {
 printf("%s\n", __func__);
   return pPif->getFeatureBits(*v);
   }
+int pifSetFeatureBits(pifHandle h, uint16_t v) {
+printf("%s\n", __func__);
+  return pPif->setFeatureBits(v);
+  }
 int pifGetFeatureRow(pifHandle h, uint64_t* v) {
 printf("%s\n", __func__);
   return pPif->getFeatureRow(*v);

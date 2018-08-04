@@ -56,6 +56,7 @@ class Tpif {
 
     bool getStatusReg(uint32_t& v);
     bool getFeatureBits(uint16_t& v);
+    bool setFeatureBits(uint16_t v);
     bool getFeatureRow(uint64_t& v);
     bool getTraceId(uint8_t* p);
 
