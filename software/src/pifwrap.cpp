@@ -93,6 +93,10 @@ int pifEraseCfg(pifHandle h) {
 printf("%s\n", __func__);
   return pPif->eraseCfg();
   }
+int pifEraseFeature(pifHandle h) {
+printf("%s\n", __func__);
+  return pPif->eraseFeature();
+  }
 int pifProgCfgPage(pifHandle h, const uint8_t *p) {
 printf("%s\n", __func__);
   return pPif->progCfgPage(p);

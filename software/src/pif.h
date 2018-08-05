@@ -71,6 +71,7 @@ class Tpif {
 
     bool initCfgAddr();
     bool eraseCfg();
+    bool eraseFeature();
     bool progCfgPage(const uint8_t *p);
     bool readCfgPages(int numPages, uint8_t *p);
 

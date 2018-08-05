@@ -79,7 +79,7 @@ static void enablejtag(pifHandle h) {
 	//cfgstatus(h);
 
 	printf("erasing all...\n");
-	//pifEraseAll(h);
+	//pifEraseFeature(h);
 	printf("done...\n");
 	//pifSetFeatureRow(h, frow);
 	// delay 200us

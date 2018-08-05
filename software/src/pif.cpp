@@ -326,6 +326,7 @@ bool Tpif::erase(int Amask) {
 
 //---------------------------------------------------------------------
 bool Tpif::eraseCfg()  { return erase(CFG_ERASE); }
+bool Tpif::eraseFeature()  { return erase(FEATURE_ERASE); }
 bool Tpif::eraseAll()  { return erase(UFM_ERASE | CFG_ERASE | FEATURE_ERASE); }
 
 bool Tpif::eraseUfm() {

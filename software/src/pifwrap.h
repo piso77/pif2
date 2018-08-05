@@ -63,6 +63,7 @@ PIF_API int  pifEraseAll(pifHandle h);
 
 PIF_API int  pifInitCfgAddr(pifHandle h);
 PIF_API int  pifEraseCfg(pifHandle h);
+PIF_API int  pifEraseFeature(pifHandle h);
 PIF_API int  pifProgCfgPage(pifHandle h, const uint8_t *p);
 PIF_API int  pifReadCfgPages(pifHandle h, int numPages, uint8_t *p);
 
