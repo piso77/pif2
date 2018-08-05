@@ -72,27 +72,21 @@ static void enablejtag(pifHandle h) {
 	pifGetFeatureRow(h, &frow);
 	fbits &= 0xfeff;
 	pifDisableCfgInterface(h);
-
 	pifWaitUntilNotBusy(h, -1);
-	//cfgstatus(h);
-	pifEnableCfgInterfaceOffline(h);
-	//cfgstatus(h);
 
+	pifEnableCfgInterfaceOffline(h);
 	printf("erasing all...\n");
-	//pifEraseFeature(h);
+	pifEraseFeature(h);
 	printf("done...\n");
-	//pifSetFeatureRow(h, frow);
-	// delay 200us
+	pifWaitUntilNotBusy(h, -1);
+	pifSetFeatureRow(h, frow);
 	//pifGetFeatureRow(h, &frow);
-	//pifSetFeatureBits(h, fbits);
-	// delay 200us
+	pifSetFeatureBits(h, fbits);
 	//pifGetFeatureBits(h, &fbits);
 
 	pifProgDone(h);
-	// delay 200us
 	pifRefresh(h);
 	pifDisableCfgInterface(h);
-
 }
 
 static void cfgstatus(pifHandle h) {
