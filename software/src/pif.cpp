@@ -255,6 +255,8 @@ bool Tpif::setFeatureBits(uint16_t v) {
   oBuf.byte(LSC_PROG_FEABITS).byte(0).byte(0).byte(0).byte(hi).byte(lo);
 
   bool ok = _cfgWrite(oBuf);
+  // sleep for 200us
+  shortSleep(200 * MICROSEC);
   return ok;
   }
 
@@ -276,6 +278,8 @@ bool Tpif::setFeatureRow(uint64_t v) {
   oBuf.byte(LSC_PROG_FEATURE).byte(0).byte(0).byte(0).byte(ptr[5]).byte(ptr[4]).byte(ptr[3]).byte(ptr[2]).byte(ptr[1]).byte(ptr[0]);
 
   bool ok = _cfgWrite(oBuf);
+  // sleep for 200us
+  shortSleep(200 * MICROSEC);
   return ok;
   }
 
