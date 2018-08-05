@@ -53,6 +53,10 @@ int pifGetFeatureRow(pifHandle h, uint64_t* v) {
 printf("%s\n", __func__);
   return pPif->getFeatureRow(*v);
   }
+int pifSetFeatureRow(pifHandle h, uint64_t v) {
+printf("%s\n", __func__);
+  return pPif->setFeatureRow(v);
+  }
 int pifGetTraceId(pifHandle h, uint8_t* p) {
 printf("%s\n", __func__);
   return pPif->getTraceId(p);

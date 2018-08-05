@@ -159,6 +159,7 @@ Non-Volatile Register (NVR) Commands
 #define ISC_PROGRAM_USERCODE    0xc2
 
 #define LSC_READ_FEATURE	0xe7
+#define LSC_PROG_FEATURE	0xe4
 #define LSC_READ_FEABITS	0xfb
 #define LSC_PROG_FEABITS	0xf8
 
@@ -265,6 +266,16 @@ bool Tpif::getFeatureRow(uint64_t& v) {
   uint8_t p[8];
   bool ok = _cfgWriteRead(oBuf, p, 8);
   v = _qwordBE(p);
+  return ok;
+  }
+
+bool Tpif::setFeatureRow(uint64_t v) {
+  TllWrBuf oBuf;
+  uint8_t *ptr = (uint8_t *)&v;
+  printf("v: %8lx\n", v);
+  oBuf.byte(LSC_PROG_FEATURE).byte(0).byte(0).byte(0).byte(ptr[5]).byte(ptr[4]).byte(ptr[3]).byte(ptr[2]).byte(ptr[1]).byte(ptr[0]);
+
+  bool ok = _cfgWrite(oBuf);
   return ok;
   }
 

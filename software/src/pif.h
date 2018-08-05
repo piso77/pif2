@@ -58,6 +58,7 @@ class Tpif {
     bool getFeatureBits(uint16_t& v);
     bool setFeatureBits(uint16_t v);
     bool getFeatureRow(uint64_t& v);
+    bool setFeatureRow(uint64_t v);
     bool getTraceId(uint8_t* p);
 
     bool enableCfgInterfaceOffline();
