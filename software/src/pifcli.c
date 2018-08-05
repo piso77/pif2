@@ -104,7 +104,7 @@ static void cfgstatus(pifHandle h) {
 	pifDisableCfgInterface(h);
 	init = INITn(h);
 	mcp23008 = mcp(h);
-	printf("*** status = %8x, fbits = %2x frow = %16llx INITn = %d", status, fbits, frow, init);
+	printf("*** status = %8x, fbits = %2x frow = %8lx INITn = %d", status, fbits, frow, init);
 
 	errcode = (status >> 23) & 7;
 	switch (errcode) {
