@@ -26,9 +26,7 @@ int main(int argc, char *argv[]) {
 		uint8_t frameData[CFG_PAGE_SIZE];
 		uint8_t c;
 		char *tmp;
-		//printf("Retrieved line[%d] of length: %zu\n", num, read);
 		num++;
-		//printf("%s", line);
 		if (line[0] != '0' && line [0] != '1') {
 			if (machine == INITIAL)
 				continue;
@@ -39,16 +37,11 @@ int main(int argc, char *argv[]) {
 		for (i=0; i < CFG_PAGE_SIZE; i++) {
 			tmp = strndup(&line[i*8], 8);
 			c = (uint8_t)strtol(tmp, &eptr, 2);
-			//printf("tmp: %s hex: 0x%02x\n", tmp, c);
 			frameData[i] = c;
 			free(tmp);
 		}
-		//pifProgCfgPage(h, frameData);
-        fwrite(frameData, sizeof(uint8_t), CFG_PAGE_SIZE, fdo);
-		//if ((num % 25)==0)
-		//	printf(".");
+		fwrite(frameData, sizeof(uint8_t), CFG_PAGE_SIZE, fdo);
 	}
-	//printf("\n");
 	fclose(fd);
 	fclose(fdo);
 }
